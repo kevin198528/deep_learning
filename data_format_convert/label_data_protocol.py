@@ -9,7 +9,6 @@ class GeneralObjectProtocol(object):
     def decode_txt_file(self, file_path):
         label_list = []
         with open(file_path, 'r') as r_f:
-            # first_info = tuple(r_f.readline())
             total = int(r_f.readline().strip())
 
             for _ in range(total):
@@ -30,9 +29,9 @@ class GeneralObjectProtocol(object):
 
     def encode_txt_file(self, file_path, label_raw_data):
         with open(file_path, 'w') as w_f:
-            w_f.write(str(label_raw_data[0][0]) + '\n')
+            w_f.write(str(len(label_raw_data)) + '\n')
 
-            for one_label in label_raw_data[1:]:
+            for one_label in label_raw_data:
                 w_f.write(str(one_label[0]) + '\n')
                 w_f.write(str(one_label[1][0]) + ' ' + str(one_label[1][1]) + '\n')
                 w_f.write(str(one_label[2][0]) + ' ' + str(one_label[2][1]) + '\n')
@@ -42,6 +41,7 @@ class GeneralObjectProtocol(object):
                               str(one_label[3+i][2]) + ' ' +
                               str(one_label[3+i][3]) + ' ' +
                               str(one_label[3+i][4]) + '\n')
+
 
 class WiderFaceProtocol(object):
     """
@@ -94,10 +94,6 @@ class WiderFaceProtocol(object):
         :param root_path:
         :return: label_data_list
         """
-        data_len = len(label_path_list)
-
-        self.__label_data_list.append([data_len])
-
         for label_file in label_path_list:
             self.__label_data_list.append(self.decode_one_label(label_file))
 

@@ -36,7 +36,8 @@ if __name__ == '__main__':
 
     gop = GeneralObjectProtocol()
 
-    gop.encode_txt_file(file_path='/home/zjq/dp_data_set/wider_face/go_label/train.txt', label_raw_data=go_label)
-    # label_list = gop.decode_txt_file(file_path='/home/zjq/dp_data_set/wider_face/go_label/train.txt')
+    # gop.encode_txt_file(file_path='/home/zjq/dp_data_set/wider_face/go_label/train.txt', label_raw_data=go_label)
+    label_list = gop.decode_txt_file(file_path='/home/zjq/dp_data_set/wider_face/go_label/train.txt')
 
-    # print(label_list[0:10])
+    print(label_list[0:10])
+    print(go_label[0:10])
