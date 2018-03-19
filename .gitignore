@@ -14,7 +14,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-.idea/
 lib/
 lib64/
 parts/
@@ -100,6 +99,9 @@ venv.bak/
 
 # mkdocs documentation
 /site
+
+# pycharm
+.idea/
 
 # mypy
 .mypy_cache/
