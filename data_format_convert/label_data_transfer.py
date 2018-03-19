@@ -34,4 +34,9 @@ if __name__ == '__main__':
 
     go_label = wft.create_go_label()
 
-    GeneralObjectProtocol(save_path='/home/zjq/dp_data_set/wider_face/go_label/train.txt').encode_txt_file(go_label)
+    gop = GeneralObjectProtocol()
+
+    gop.encode_txt_file(file_path='/home/zjq/dp_data_set/wider_face/go_label/train.txt', label_raw_data=go_label)
+    # label_list = gop.decode_txt_file(file_path='/home/zjq/dp_data_set/wider_face/go_label/train.txt')
+
+    # print(label_list[0:10])

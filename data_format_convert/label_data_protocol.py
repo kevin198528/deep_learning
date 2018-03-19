@@ -3,25 +3,45 @@ import xml.etree.ElementTree as xml_et
 
 
 class GeneralObjectProtocol(object):
-    def __init__(self, save_path=None):
-        self.__save_path = save_path
-
-    # def tuple2str(self, tuple):
-    #     for i in tuple:
-
-    def decode(self):
+    def __init__(self):
         pass
 
-    def encode_txt_file(self, label_raw_data):
-        with open(self.__save_path, 'w') as w_f:
-            w_f.write(label_raw_data[0][0] + ' ' + str(label_raw_data[0][1]) + '\n')
+    def decode_txt_file(self, file_path):
+        label_list = []
+        with open(file_path, 'r') as r_f:
+            # first_info = tuple(r_f.readline())
+            total = int(r_f.readline().strip())
+
+            for _ in range(total):
+                tmp_list = []
+                path = r_f.readline().strip()
+                weight, hight = r_f.readline().strip().split(' ')
+                num, dim = r_f.readline().strip().split(' ')
+                tmp_list.append(path)
+                tmp_list.append((int(weight), int(hight)))
+                tmp_list.append((int(num), int(dim)))
+                for _ in range(int(num)):
+                    dif, x_min, y_min, x_max, y_max = r_f.readline().strip().split(' ')
+                    tmp_list.append((int(dif), int(x_min), int(y_min), int(x_max), int(y_max)))
+
+                label_list.append(tmp_list)
+
+        return label_list
+
+    def encode_txt_file(self, file_path, label_raw_data):
+        with open(file_path, 'w') as w_f:
+            w_f.write(str(label_raw_data[0][0]) + '\n')
 
             for one_label in label_raw_data[1:]:
                 w_f.write(str(one_label[0]) + '\n')
-                w_f.write(str(one_label[1]) + '\n')
-                w_f.write(str(one_label[2]) + '\n')
+                w_f.write(str(one_label[1][0]) + ' ' + str(one_label[1][1]) + '\n')
+                w_f.write(str(one_label[2][0]) + ' ' + str(one_label[2][1]) + '\n')
                 for i in range(int(one_label[2][0])):
-                    w_f.write(str(one_label[3+i]) + '\n')
+                    w_f.write(str(one_label[3+i][0]) + ' ' +
+                              str(one_label[3+i][1]) + ' ' +
+                              str(one_label[3+i][2]) + ' ' +
+                              str(one_label[3+i][3]) + ' ' +
+                              str(one_label[3+i][4]) + '\n')
 
 class WiderFaceProtocol(object):
     """
@@ -53,7 +73,8 @@ class WiderFaceProtocol(object):
 
             for _ in root.iter('object'):
                 count += 1
-            label_item.append((count, 4))
+
+            label_item.append((count, 5))
 
             for obj in root.iter('object'):
                 difficult = int(obj.find('difficult').text)
@@ -74,9 +95,8 @@ class WiderFaceProtocol(object):
         :return: label_data_list
         """
         data_len = len(label_path_list)
-        name = 'wider_face'
 
-        self.__label_data_list.append([name, data_len])
+        self.__label_data_list.append([data_len])
 
         for label_file in label_path_list:
             self.__label_data_list.append(self.decode_one_label(label_file))
