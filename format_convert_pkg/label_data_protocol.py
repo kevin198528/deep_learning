@@ -2,51 +2,58 @@
 import xml.etree.ElementTree as xml_et
 
 
-class GeneralObjectProtocol(object):
+class GeneralCodecProtocol(object):
     def __init__(self):
-        pass
+        self.__label_list = []
 
     def decode_txt_file(self, file_path):
-        label_list = []
-        with open(file_path, 'r') as r_f:
-            total = int(r_f.readline().strip())
+        with open(file_path, 'r') as fp:
+            while True:
+                ret = fp.readline().strip()
+                if ret == '':
+                    print('read file end')
+                    return self.__label_list
+                else:
+                    item_list = []
+                    """
+                    add path
+                    """
+                    item_list.append(ret)
+                    """
+                    add weight hight
+                    """
+                    weight, hight = fp.readline().strip().split(' ')
+                    item_list.append((int(weight), int(hight)))
+                    """
+                    add num dim
+                    """
+                    num, dim = fp.readline().strip().split(' ')
+                    item_list.append((int(num), int(dim)))
 
-            for _ in range(total):
-                tmp_list = []
-                path = r_f.readline().strip()
-                weight, hight = r_f.readline().strip().split(' ')
-                num, dim = r_f.readline().strip().split(' ')
-                tmp_list.append(path)
-                tmp_list.append((int(weight), int(hight)))
-                tmp_list.append((int(num), int(dim)))
-                for _ in range(int(num)):
-                    dif, x_min, y_min, x_max, y_max = r_f.readline().strip().split(' ')
-                    tmp_list.append((int(dif), int(x_min), int(y_min), int(x_max), int(y_max)))
+                    for _ in range(int(num)):
+                        dif, x_min, y_min, x_max, y_max = fp.readline().strip().split(' ')
+                        item_list.append((int(dif), int(x_min), int(y_min), int(x_max), int(y_max)))
 
-                label_list.append(tmp_list)
+                    self.__label_list.append(item_list)
 
-        return label_list
-
-    def encode_txt_file(self, file_path, label_raw_data):
-        with open(file_path, 'w') as w_f:
-            w_f.write(str(len(label_raw_data)) + '\n')
-
-            for one_label in label_raw_data:
-                w_f.write(str(one_label[0]) + '\n')
-                w_f.write(str(one_label[1][0]) + ' ' + str(one_label[1][1]) + '\n')
-                w_f.write(str(one_label[2][0]) + ' ' + str(one_label[2][1]) + '\n')
+    def encode_txt_file(self, file_path, gcp_data):
+        with open(file_path, 'w') as fp:
+            for one_label in gcp_data:
+                fp.write(str(one_label[0]) + '\n')
+                fp.write(str(one_label[1]).replace(',', '').strip('(').strip(')') + '\n')
+                fp.write(str(one_label[2]).replace(',', '').strip('(').strip(')') + '\n')
                 for i in range(int(one_label[2][0])):
-                    w_f.write(str(one_label[3+i][0]) + ' ' +
-                              str(one_label[3+i][1]) + ' ' +
-                              str(one_label[3+i][2]) + ' ' +
-                              str(one_label[3+i][3]) + ' ' +
-                              str(one_label[3+i][4]) + '\n')
+                    fp.write(str(one_label[3+i]).replace(',', '').strip('(').strip(')') + '\n')
+
+
+class FaceFrameCalibration(GeneralCodecProtocol):
+    pass
+    # def convert_24x24_face(self, ffc_data):
+    #     small_face_data =
 
 
 class WiderFaceProtocol(object):
-    """
 
-    """
     def __init__(self):
         """
         label_data_list = [[img_file_path, (dim_x, dim_y), (hard_easy_flag, label_data), ...)], ...]
