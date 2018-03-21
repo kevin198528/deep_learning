@@ -1,3 +1,5 @@
+import tensorflow as tf
+
 class Dog(object):
     n = 0
 
@@ -11,4 +13,4 @@ class Dog(object):
 
 if __name__ == '__main__':
     Dog.eat(food='bone')
-
+    tf.image.decode_gif()

@@ -1,0 +1,8 @@
+/home/zjq/dp_data_set/wider_face/WIDER_train/images/12--Group/12_Group_Group_12_Group_Group_12_2.jpg
+1024 683
+5 5
+0 170 142 264 268
+0 324 162 406 272
+0 518 208 598 310
+0 690 114 764 230
+0 814 106 878 192
