@@ -1,5 +1,5 @@
 from include import *
-
+from img import *
 
 class AnnoCore(object):
     def __init__(self):
@@ -87,13 +87,13 @@ class WiderFace(object):
             for _ in root.iter('object'):
                 count += 1
 
-            label_item.append((count, 5))
+            label_item.append((count, 4))
 
             for obj in root.iter('object'):
-                difficult = int(obj.find('difficult').text)
+                # difficult = int(obj.find('difficult').text)
                 xmlbox = obj.find('bndbox')
-                box = (difficult,
-                       int(xmlbox.find('xmin').text),
+                # box = (difficult,
+                box = (int(xmlbox.find('xmin').text),
                        int(xmlbox.find('ymin').text),
                        int(xmlbox.find('xmax').text),
                        int(xmlbox.find('ymax').text))
@@ -123,7 +123,8 @@ class WiderFace(object):
                     wider face protocol has bug with img path and anno path,
                     the format is not the same
                     """
-                    img_file = join(img_root_path, path.replace(img_root_path, '').strip('/'), file)
+                    # img_file = join(img_root_path, path.replace(img_root_path, '').strip('/')) + '/' + file
+                    img_file = join(path, file)
                     label_file = join(anno_root_path, path.replace(img_root_path, '').strip('/')
                                               + '_' + file.replace('.jpg', '.xml'))
 
@@ -138,15 +139,15 @@ class WiderFace(object):
 
 
 if __name__ == '__main__':
-    pass
-    # img_root = '/home/zjq/dp_data_set/wider_face/WIDER_train/images'
-    # anno_root = '/home/zjq/dp_data_set/wider_face/Annotations'
+    # pass
+    img_root = '/home/zjq/dp_data_set/wider_face/WIDER_train/images'
+    anno_root = '/home/zjq/dp_data_set/wider_face/Annotations'
 
     # annos = WiderFace.decode_xml(img_root_path=img_root,
     #                              anno_root_path=anno_root)
-
-    # anno = WiderFace.decode1xml(img_file=join(img_root, '12--Group/12_Group_Group_12_Group_Group_12_2.jpg'),
-    #                             label_file=join(anno_root, '12--Group_12_Group_Group_12_Group_Group_12_2.xml'))
+    # print(annos[0:10])
+    anno = WiderFace.decode1xml(img_file=join(img_root, '47--Matador_Bullfighter/47_Matador_Bullfighter_Matador_Bullfighter_47_734.jpg'),
+                                label_file=join(anno_root, '47--Matador_Bullfighter_47_Matador_Bullfighter_Matador_Bullfighter_47_734.xml'))
 
     # AnnoCore.encode_txt(file_path='./anno.txt', annos=[anno])
 
