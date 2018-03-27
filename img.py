@@ -2,8 +2,9 @@ from include import *
 
 from anno import *
 
+
 class ImgCore(object):
-    def __init__(self, file=None):
+    def __init__(self):
         """
         raw img annotation and std size
         each picture process one face annotation
@@ -16,19 +17,20 @@ class ImgCore(object):
           + |
           y v
         """
-        assert file
-        self.__raw_img = self.decode_jpg(file)
-
-    def encode_jpg(self, file_name=None):
+        # assert file
+        # self.__raw_img = self.decode_jpg(file)
+    @staticmethod
+    def encode_jpg(img, file_name=None):
         assert file_name
+        cv2.imwrite(file_name, img, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
 
-        cv2.imwrite(file_name, self.__raw_img, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
-
-    def decode_jpg(self, file):
+    @staticmethod
+    def decode_jpg(file):
         assert file
         return cv2.imread(file)
 
-    def draw_face(self, boxes):
+    @staticmethod
+    def draw_boxes(img, boxes):
         """
         draw bounding_ box in raw_img
 
@@ -36,16 +38,125 @@ class ImgCore(object):
         for box in boxes:
             print(box)
             n_box = np.array(box, np.int32)
-            cv2.rectangle(self.__raw_img, tuple(n_box[0:2]), tuple(n_box[2:4]), (0, 255, 0), 1)
+            cv2.rectangle(img, tuple(n_box[0:2]), tuple(n_box[2:4]), (0, 255, 0), 1)
 
-    def show(self):
+    @staticmethod
+    def show(img):
         """
         show img use opencv api
 
         """
         cv2.namedWindow('win', flags=0)
-        cv2.imshow('win', self.__raw_img)
+        cv2.imshow('win', img)
         cv2.waitKey(0)
+
+
+class ImgChange(object):
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def file_manage_save(img, root_path, num):
+        group_id = int(num/10000)
+        img_id = int(num%10000)
+
+        group_path = join(root_path, "group_" + str(group_id))
+
+        check_path(group_path)
+
+        ImgCore.encode_jpg(img, join(group_path, str(img_id) + ".jpg"))
+
+    @staticmethod
+    def file_anno_save(anno_list, anno_path, num):
+        anno_tmp = []
+        group_id = int(num / 10000)
+        img_id = int(num % 10000)
+
+        group_path = join(anno_path, "group_" + str(group_id))
+        full_path = join(group_path, str(img_id) + ".jpg")
+        anno_tmp.append(full_path)
+        anno_tmp.append((24, 24))
+        anno_tmp.append((1, 2))
+        anno_tmp.append((1, 0))
+        anno_list.append(anno_tmp)
+
+    @staticmethod
+    def img_resize(img, width, high, scale):
+        return cv2.resize(img, (int(width * scale), int(high * scale)), interpolation=cv2.INTER_AREA)
+
+    """
+    random select annos img , crop and save
+    """
+    @staticmethod
+    def crop_face(annos, num, min_size=36, root_path='/home/zjq/dp_data_set/icrd_face/img/face/'):
+        crop_annos = []
+        total = len(annos)
+        count = 0
+
+        while num > 0:
+            item = np.random.randint(0, total, 1)[0]
+
+            # print(annos[item][2])
+            # print(annos[item][0])
+
+            if annos[item][2][0] < 1:
+                continue
+
+            r_box = np.random.randint(0, annos[item][2][0], 1)[0]
+
+            img_width = annos[item][1][0]
+            img_high = annos[item][1][1]
+
+            x_s = annos[item][3+r_box][0]
+            x_e = annos[item][3+r_box][2]
+            y_s = annos[item][3+r_box][1]
+            y_e = annos[item][3+r_box][3]
+
+            face_width = x_e - x_s
+            face_high = y_e - y_s
+
+            if min(x_e - x_s, y_e - y_s) < 24:
+                continue
+
+            if x_s < face_width or x_e > (img_width - face_width) or y_s < face_high or y_e > (img_high - face_high):
+                continue
+
+            img = ImgCore.decode_jpg(annos[item][0])
+
+            scale = (24.0 / max(face_width, face_high))
+
+            resize_img = ImgChange.img_resize(img, img_width, img_high, scale)
+
+            # print(face_width)
+            # print(face_high)
+            # print(scale)
+
+            if face_width <= face_high:
+                y_rand = np.random.randint(0, int((24 - face_width*scale) + 1), 1)[0]
+                bounding_box = resize_img[int(y_s*scale):int(y_s*scale + 24),
+                               int(x_s*scale - y_rand):int(x_s*scale - y_rand + 24)]
+            else:
+                x_rand = np.random.randint(0, int((24 - face_high*scale)) + 1, 1)[0]
+                bounding_box = resize_img[int(y_s*scale - x_rand):int(y_s*scale - x_rand + 24),
+                               int(x_s*scale):int(x_s*scale + 24)]
+
+            # ImgCore.show(bounding_box)
+            #
+            # ImgCore.draw_boxes(img, annos[item][3:])
+            #
+            # ImgCore.show(img)
+
+            ImgChange.file_manage_save(bounding_box, root_path, count)
+
+            num -= 1
+            count += 1
+
+            ImgChange.file_anno_save(crop_annos, anno_path="/home/zjq/dp_data_set/icrd_face/img/annos/", num=count)
+
+            if len(crop_annos) >= 10000:
+                AnnoCore.encode_txt("/home/zjq/dp_data_set/icrd_face/img/annos/"+"group_"+str(int(count/10000))+".txt", crop_annos)
+                crop_annos = []
+
 
 class ImgBase(object):
     def __init__(self, img, anno_boxes, face_idx):
@@ -560,17 +671,21 @@ if __name__ == '__main__':
     img_root = '/home/zjq/dp_data_set/wider_face/WIDER_train/images'
     anno_root = '/home/zjq/dp_data_set/wider_face/Annotations'
 
+    print("befor annos")
     annos = WiderFace.decode_xml(img_root_path=img_root,
                                  anno_root_path=anno_root)
 
+    ImgChange.crop_face(annos=annos, num=20001)
+
+    # print("after annos")
     # anno = WiderFace.decode1xml(
     #     img_file=join(img_root, '47--Matador_Bullfighter/47_Matador_Bullfighter_Matador_Bullfighter_47_734.jpg'),
     #     label_file=join(anno_root, '47--Matador_Bullfighter_47_Matador_Bullfighter_Matador_Bullfighter_47_734.xml'))
 
-    img_ins = ImgCore(file=annos[101][0])
-
-    img_ins.draw_face(annos[101][3:])
-    img_ins.show()
+    # img_ins = ImgCore(file=annos[101][0])
+    #
+    # img_ins.draw_boxes(annos[101][3:])
+    # img_ins.show()
 
     # img_ins.encode_jpg(file_name='./img_ins.jpg')
     # img_file = '/home/kevin/face/wider_face/WIDER_train/images'

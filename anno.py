@@ -1,6 +1,7 @@
 from include import *
 from img import *
 
+
 class AnnoCore(object):
     def __init__(self):
         pass
@@ -52,6 +53,7 @@ class AnnoCore(object):
                 fp.write(str(label[2]).replace(',', '').strip('(').strip(')') + '\n')
                 for i in range(int(label[2][0])):
                     fp.write(str(label[3+i]).replace(',', '').strip('(').strip(')') + '\n')
+
 
 
 class WiderFace(object):
