@@ -58,7 +58,7 @@ class ImgChange(object):
     @staticmethod
     def file_manage_save(img, root_path, num):
         group_id = int(num/10000)
-        img_id = int(num%10000)
+        img_id = int(num % 10000)
 
         group_path = join(root_path, "group_" + str(group_id))
 
@@ -84,23 +84,40 @@ class ImgChange(object):
     def img_resize(img, width, high, scale):
         return cv2.resize(img, (int(width * scale), int(high * scale)), interpolation=cv2.INTER_AREA)
 
+    # @staticmethod
+    # def
+    #     return cv
+
+
+
     """
     random select annos img , crop and save
     """
     @staticmethod
-    def crop_face(annos, num, min_size=36, root_path='/home/zjq/dp_data_set/icrd_face/img/face/'):
+    def crop_face(annos, num, min_size=24, root_path='/home/zjq/dp_data_set/24x24_face/'):
         crop_annos = []
-        total = len(annos)
         count = 0
 
+        check_num = lambda img: img['num'] < 1
+        check_box_size = lambda box: min(r_box[2] - r_box[0], r_box[3] - r_box[1]) <= min_size
+
         while num > 0:
-            item = np.random.randint(0, total, 1)[0]
+            r_img = random.sample(annos, 1)[0]
 
-            # print(annos[item][2])
-            # print(annos[item][0])
-
-            if annos[item][2][0] < 1:
+            """
+            must have at least one anno
+            """
+            if check_num(r_img):
                 continue
+
+            r_box = random.sample(r_img['annos'], 1)[0]
+
+            if check_box_size(r_box):
+                continue
+
+            print(r_box)
+
+            time.sleep(10000)
 
             r_box = np.random.randint(0, annos[item][2][0], 1)[0]
 
@@ -145,16 +162,18 @@ class ImgChange(object):
             # ImgCore.draw_boxes(img, annos[item][3:])
             #
             # ImgCore.show(img)
+            scale = (24.0 / max(face_width, face_high))
 
             ImgChange.file_manage_save(bounding_box, root_path, count)
 
             num -= 1
             count += 1
 
-            ImgChange.file_anno_save(crop_annos, anno_path="/home/zjq/dp_data_set/icrd_face/img/annos/", num=count)
+            ImgChange.file_anno_save(crop_annos, anno_path="/home/zjq/dp_data_set/icrd_face/anno/", num=count)
 
             if len(crop_annos) >= 10000:
-                AnnoCore.encode_txt("/home/zjq/dp_data_set/icrd_face/img/annos/"+"group_"+str(int(count/10000))+".txt", crop_annos)
+                AnnoCore.encode_txt("/home/zjq/dp_data_set/icrd_face/img/" +
+                                    "group_" + str(int(count/10000)) + ".txt", crop_annos)
                 crop_annos = []
 
 

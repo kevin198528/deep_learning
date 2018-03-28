@@ -1,6 +1,6 @@
 from include import *
-from img import *
-
+# from img import *
+import random
 
 class AnnoCore(object):
     def __init__(self):
@@ -22,23 +22,27 @@ class AnnoCore(object):
                 if ret == '':
                     return annos
                 else:
-                    item_list = []
-                    item_list.append(ret)
-                    weight, hight = fp.readline().strip().split(' ')
-                    item_list.append((int(weight), int(hight)))
+                    item_list = {}
+                    item_list['path'] = ret
+                    width, height = fp.readline().strip().split(' ')
+                    item_list['width'] = int(width)
+                    item_list['height'] = int(height)
                     num, dim = fp.readline().strip().split(' ')
-                    item_list.append((int(num), int(dim)))
+                    item_list['num'] = int(num)
+                    item_list['dim'] = int(dim)
 
+                    anno_list = []
                     for _ in range(int(num)):
-                        dif, x_min, y_min, x_max, y_max = fp.readline().strip().split(' ')
-                        item_list.append((int(dif), int(x_min), int(y_min), int(x_max), int(y_max)))
+                        x_min, y_min, x_max, y_max = fp.readline().strip().split(' ')
+                        anno_list.append((int(x_min), int(y_min), int(x_max), int(y_max)))
+
+                    item_list['annos'] = anno_list
 
                     annos.append(item_list)
 
     @staticmethod
     def encode_txt(file_path, annos):
         """
-
         :param file_path:
         :param annos:
         :return:
@@ -48,12 +52,11 @@ class AnnoCore(object):
 
         with open(file_path, 'w') as fp:
             for label in annos:
-                fp.write(str(label[0]) + '\n')
-                fp.write(str(label[1]).replace(',', '').strip('(').strip(')') + '\n')
-                fp.write(str(label[2]).replace(',', '').strip('(').strip(')') + '\n')
-                for i in range(int(label[2][0])):
-                    fp.write(str(label[3+i]).replace(',', '').strip('(').strip(')') + '\n')
-
+                fp.write(str(label['path']) + '\n')
+                fp.write(str(label['width']) + ' ' + str(label['height']) + '\n')
+                fp.write(str(label['num']) + ' ' + str(label['dim']) + '\n')
+                for anno in label['annos']:
+                    fp.write(str(anno).replace(',', '').strip('(').strip(')') + '\n')
 
 
 class WiderFace(object):
@@ -74,34 +77,39 @@ class WiderFace(object):
         assert img_file
         assert label_file
 
-        label_item = []
+        """
+        one anno format
+        {'path':'...', 'width': 1024, 'high': 768, 'num': 10, 'dim': 4, 'anno': [[1, 2, 3, 4], [5, 6, 7, 8]]}
+        
+        """
+        img_anno = {}
         count = 0
-        label_item.append(img_file)
+        img_anno['path'] = img_file
         with open(label_file) as label_f:
             tree = xml_et.parse(label_f)
             root = tree.getroot()
 
-            weight = int(root.find('size').find('width').text)
-            height = int(root.find('size').find('height').text)
-
-            label_item.append((weight, height))
+            img_anno['width'] = int(root.find('size').find('width').text)
+            img_anno['height'] = int(root.find('size').find('height').text)
 
             for _ in root.iter('object'):
                 count += 1
 
-            label_item.append((count, 4))
+            img_anno['num'] = count
+            img_anno['dim'] = 4
 
+            box_anno = []
             for obj in root.iter('object'):
-                # difficult = int(obj.find('difficult').text)
                 xmlbox = obj.find('bndbox')
-                # box = (difficult,
                 box = (int(xmlbox.find('xmin').text),
                        int(xmlbox.find('ymin').text),
                        int(xmlbox.find('xmax').text),
                        int(xmlbox.find('ymax').text))
-                label_item.append(box)
+                box_anno.append(box)
 
-        return label_item
+            img_anno['annos'] = box_anno
+
+        return img_anno
 
     @staticmethod
     def decode_xml(img_root_path=None, anno_root_path=None):
@@ -125,7 +133,6 @@ class WiderFace(object):
                     wider face protocol has bug with img path and anno path,
                     the format is not the same
                     """
-                    # img_file = join(img_root_path, path.replace(img_root_path, '').strip('/')) + '/' + file
                     img_file = join(path, file)
                     label_file = join(anno_root_path, path.replace(img_root_path, '').strip('/')
                                               + '_' + file.replace('.jpg', '.xml'))
@@ -148,11 +155,15 @@ if __name__ == '__main__':
     # annos = WiderFace.decode_xml(img_root_path=img_root,
     #                              anno_root_path=anno_root)
     # print(annos[0:10])
-    anno = WiderFace.decode1xml(img_file=join(img_root, '47--Matador_Bullfighter/47_Matador_Bullfighter_Matador_Bullfighter_47_734.jpg'),
-                                label_file=join(anno_root, '47--Matador_Bullfighter_47_Matador_Bullfighter_Matador_Bullfighter_47_734.xml'))
+    # anno = WiderFace.decode1xml(img_file=join(img_root, '47--Matador_Bullfighter/47_Matador_Bullfighter_Matador_Bullfighter_47_734.jpg'),
+    #                             label_file=join(anno_root, '47--Matador_Bullfighter_47_Matador_Bullfighter_Matador_Bullfighter_47_734.xml'))
 
-    # AnnoCore.encode_txt(file_path='./anno.txt', annos=[anno])
+    # AnnoCore.encode_txt(file_path='./anno.txt', annos=annos)
 
-    # annos = AnnoCore.decode_txt(file_path='./anno.txt')
+    annos = AnnoCore.decode_txt(file_path='./anno.txt')
 
-    # print(annos)
+    # print(annos[0:10])
+    for item in annos[0:10]:
+        print(item)
+
+    print(random.sample(annos[0:10], 1)[0])
