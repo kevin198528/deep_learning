@@ -84,17 +84,61 @@ class ImgChange(object):
     def img_resize(img, width, high, scale):
         return cv2.resize(img, (int(width * scale), int(high * scale)), interpolation=cv2.INTER_AREA)
 
-    # @staticmethod
-    # def
-    #     return cv
+    @staticmethod
+    def get_random_box(face_box):
+        """
+        face_box (x1, y1, x2, y2)
+        :param face_box:
+        :return:
+        """
+        w_face = face_box[2] - face_box[0]
+        h_face = face_box[3] - face_box[1]
+        h_max = max(w_face, h_face)
+        h_min = min(w_face, h_face)
+
+        if h_max == h_min:
+            return face_box
+
+        n_rand = np.random.randint(0, h_max - h_min, 1)[0]
+
+        if w_face > h_face:
+            return (face_box[0], face_box[1] - n_rand, face_box[0] + h_max, face_box[1] - n_rand + h_max)
+
+        if w_face < h_face:
+            return (face_box[0] - n_rand, face_box[1], face_box[0] - n_rand + h_max, face_box[1] + h_max)
 
 
+    @staticmethod
+    def get_square_box(img_box, face_box):
+        """
+        :param img_box:　(width, height)
+        :param face_box: (x1, y1, x2, y2)
+        :return:
+        """
+        width = img_box[0]
+        height = img_box[1]
+        w_face = face_box[2] - face_box[0]
+        h_face = face_box[3] - face_box[1]
+        square = max(w_face, h_face)
+
+        std_iou = iou(np.array([0, 0, square, square], np.int32), np.array([[0, 0, width, height]], np.int32))
+
+        for i in range(10):
+            quare_box = ImgChange.get_random_box(face_box)
+
+            q_iou = iou(np.array(quare_box, np.int32), np.array([[0, 0, width, height]], np.int32))
+
+            # all must be >0
+            if q_iou == std_iou and min(quare_box) >= 0:
+                return quare_box
+
+        return False
 
     """
     random select annos img , crop and save
     """
     @staticmethod
-    def crop_face(annos, num, min_size=24, root_path='/home/zjq/dp_data_set/24x24_face/'):
+    def crop_face(annos, num, min_size=24, root_path='/home/zjq/dp_data_set/24x24_face/img'):
         crop_annos = []
         count = 0
 
@@ -115,64 +159,28 @@ class ImgChange(object):
             if check_box_size(r_box):
                 continue
 
-            print(r_box)
+            s_box = ImgChange.get_square_box((r_img['width'], r_img['height']), r_box)
 
-            time.sleep(10000)
-
-            r_box = np.random.randint(0, annos[item][2][0], 1)[0]
-
-            img_width = annos[item][1][0]
-            img_high = annos[item][1][1]
-
-            x_s = annos[item][3+r_box][0]
-            x_e = annos[item][3+r_box][2]
-            y_s = annos[item][3+r_box][1]
-            y_e = annos[item][3+r_box][3]
-
-            face_width = x_e - x_s
-            face_high = y_e - y_s
-
-            if min(x_e - x_s, y_e - y_s) < 24:
+            if s_box is False:
                 continue
 
-            if x_s < face_width or x_e > (img_width - face_width) or y_s < face_high or y_e > (img_high - face_high):
-                continue
+            img = ImgCore.decode_jpg(r_img['path'])
 
-            img = ImgCore.decode_jpg(annos[item][0])
+            scale = float(min_size / (s_box[2] - s_box[0]))
 
-            scale = (24.0 / max(face_width, face_high))
+            resize_img = ImgChange.img_resize(img, r_img['width'], r_img['height'], scale)
 
-            resize_img = ImgChange.img_resize(img, img_width, img_high, scale)
-
-            # print(face_width)
-            # print(face_high)
-            # print(scale)
-
-            if face_width <= face_high:
-                y_rand = np.random.randint(0, int((24 - face_width*scale) + 1), 1)[0]
-                bounding_box = resize_img[int(y_s*scale):int(y_s*scale + 24),
-                               int(x_s*scale - y_rand):int(x_s*scale - y_rand + 24)]
-            else:
-                x_rand = np.random.randint(0, int((24 - face_high*scale)) + 1, 1)[0]
-                bounding_box = resize_img[int(y_s*scale - x_rand):int(y_s*scale - x_rand + 24),
-                               int(x_s*scale):int(x_s*scale + 24)]
-
-            # ImgCore.show(bounding_box)
-            #
-            # ImgCore.draw_boxes(img, annos[item][3:])
-            #
-            # ImgCore.show(img)
-            scale = (24.0 / max(face_width, face_high))
+            bounding_box = resize_img[int(s_box[1]*scale):int(s_box[3]*scale), int(s_box[0]*scale):int(s_box[2]*scale)]
 
             ImgChange.file_manage_save(bounding_box, root_path, count)
 
             num -= 1
             count += 1
 
-            ImgChange.file_anno_save(crop_annos, anno_path="/home/zjq/dp_data_set/icrd_face/anno/", num=count)
+            ImgChange.file_anno_save(crop_annos, anno_path="/home/zjq/dp_data_set/24x24_face/anno/", num=count)
 
-            if len(crop_annos) >= 10000:
-                AnnoCore.encode_txt("/home/zjq/dp_data_set/icrd_face/img/" +
+            if len(crop_annos) >= 1000:
+                AnnoCore.encode_txt("/home/zjq/dp_data_set/24x24_face/img/" +
                                     "group_" + str(int(count/10000)) + ".txt", crop_annos)
                 crop_annos = []
 
@@ -691,8 +699,33 @@ if __name__ == '__main__':
     anno_root = '/home/zjq/dp_data_set/wider_face/Annotations'
 
     print("befor annos")
-    annos = WiderFace.decode_xml(img_root_path=img_root,
-                                 anno_root_path=anno_root)
+    # annos = WiderFace.decode_xml(img_root_path=img_root,
+    #                              anno_root_path=anno_root)
+
+    annos = AnnoCore.decode_txt('./anno.txt')
+
+    # for one_pic in annos:
+    #
+    #     img = ImgCore.decode_jpg(one_pic['path'])
+    #
+    #     if one_pic['num'] >= 1:
+    #         anno = random.sample(one_pic['annos'], 1)[0]
+    #         if ImgChange.get_square_box((one_pic['width'], one_pic['height']), anno) is False:
+    #             print('not get ')
+    #             # ImgCore.draw_boxes(img, [anno])
+    #             # ImgCore.show(img)
+    #
+    #
+    #     else:
+    #         print('no annos')
+
+        # r_box = ImgChange.get_random_box(one_pic['annos'][4])
+        #
+        # print(r_box)
+
+        # ImgCore.draw_boxes(img, [r_box])
+        #
+        # ImgCore.show(img)
 
     ImgChange.crop_face(annos=annos, num=20001)
 
@@ -701,7 +734,7 @@ if __name__ == '__main__':
     #     img_file=join(img_root, '47--Matador_Bullfighter/47_Matador_Bullfighter_Matador_Bullfighter_47_734.jpg'),
     #     label_file=join(anno_root, '47--Matador_Bullfighter_47_Matador_Bullfighter_Matador_Bullfighter_47_734.xml'))
 
-    # img_ins = ImgCore(file=annos[101][0])
+    # img_ins = ImgCore(file=annos[101]['path'])
     #
     # img_ins.draw_boxes(annos[101][3:])
     # img_ins.show()
