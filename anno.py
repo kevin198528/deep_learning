@@ -2,6 +2,7 @@ from include import *
 # from img import *
 import random
 
+
 class AnnoCore(object):
     def __init__(self):
         pass
@@ -147,23 +148,36 @@ class WiderFace(object):
         pass
 
 
+#
+# class Codecoder(object):
+#     def __init__(self):
+#         pass
+
+
+
+
+
 if __name__ == '__main__':
+    a = XmlDecoderManager(WFXmlDecoder())
+
+    # a.set_decoder(WFXmlDecoder())
+
+    a.decode_xml('root')
     # pass
-    img_root = '/home/zjq/dp_data_set/wider_face/WIDER_train/images'
-    anno_root = '/home/zjq/dp_data_set/wider_face/Annotations'
-
-    # annos = WiderFace.decode_xml(img_root_path=img_root,
-    #                              anno_root_path=anno_root)
-    # print(annos[0:10])
-    # anno = WiderFace.decode1xml(img_file=join(img_root, '47--Matador_Bullfighter/47_Matador_Bullfighter_Matador_Bullfighter_47_734.jpg'),
-    #                             label_file=join(anno_root, '47--Matador_Bullfighter_47_Matador_Bullfighter_Matador_Bullfighter_47_734.xml'))
-
-    # AnnoCore.encode_txt(file_path='./anno.txt', annos=annos)
-
-    annos = AnnoCore.decode_txt(file_path='./anno.txt')
-
-    # print(annos[0:10])
-    for item in annos[0:10]:
-        print(item)
-
-    print(random.sample(annos[0:10], 1)[0])
+    # img_root = '/home/zjq/dp_data_set/wider_face/WIDER_train/images'
+    # anno_root = '/home/zjq/dp_data_set/wider_face/Annotations'
+    #
+    # # annos = WiderFace.decode_xml(img_root_path=img_root,
+    # #                              anno_root_path=anno_root)
+    # # print(annos[0:10])
+    # # anno = WiderFace.decode1xml(img_file=join(img_root, '47--Matador_Bullfighter/47_Matador_Bullfighter_Matador_Bullfighter_47_734.jpg'),
+    # #                             label_file=join(anno_root, '47--Matador_Bullfighter_47_Matador_Bullfighter_Matador_Bullfighter_47_734.xml'))
+    # # AnnoCore.encode_txt(file_path='./anno.txt', annos=annos)
+    #
+    # annos = AnnoCore.decode_txt(file_path='./anno.txt')
+    #
+    # # print(annos[0:10])
+    # for item in annos[0:10]:
+    #     print(item)
+    #
+    # print(random.sample(annos[0:10], 1)[0])

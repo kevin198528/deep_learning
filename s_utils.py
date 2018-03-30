@@ -1,8 +1,16 @@
+from include import *
 import os
 import numpy as np
 
 join = lambda a, b: os.path.join(a, b)
 
+
+def label_path_to_img_path(label_path):
+    a = re.findall(r'_\d{1,2}', label_path)[0]
+
+    b = a.replace('_', '/')
+
+    return label_path.replace(a, b, 1).replace('.xml', '.jpg')
 
 def check_path(path):
     if not os.path.exists(path):
@@ -41,16 +49,21 @@ def iou(box, boxes):
 
 
 if __name__ == '__main__':
+    print(join('hello', 'world'))
+    label_path = "47--Matador_Bullfighter_47_Matador_Bullfighter_matadorbullfighting_47_172.xml"
+
+    print(label_path_to_img_path(label_path))
+
     # box = np.array([0, 0, 3, 3]).astype(np.float32)
     # boxes = np.array([[0, 0, 4, 4]]).astype(np.float32)
     # print(box)
     # print(boxes)
     # print(IoU(box, boxes))
 
-    box = np.array([0, 0, 2, 2])
-    boxes = np.array([[0, 0, 2, 2], [0, 0, 4, 4]])
-
-    print(iou(box, boxes))
+    # box = np.array([0, 0, 2, 2])
+    # boxes = np.array([[0, 0, 2, 2], [0, 0, 4, 4]])
+    #
+    # print(iou(box, boxes))
 
     # a = 24
     # b = 30
