@@ -1,8 +1,34 @@
-from include import *
+# from include import *
 import os
 import numpy as np
+import cv2
+import re
 
 join = lambda a, b: os.path.join(a, b)
+
+
+def img_resize(img, attr, scale):
+    return cv2.resize(img, (int(attr[0] * scale), int(attr[1] * scale)), interpolation=cv2.INTER_AREA)
+
+def draw_boxes(img, boxes):
+    """
+    draw bounding_ box in raw_img
+
+    """
+    for box in boxes:
+        print(box)
+        n_box = np.array(box, np.int32)
+        cv2.rectangle(img, tuple(n_box[0:2]), tuple(n_box[2:4]), (0, 255, 0), 1)
+
+
+def show(img):
+    """
+    show img use opencv api
+
+    """
+    cv2.namedWindow('win', flags=0)
+    cv2.imshow('win', img)
+    cv2.waitKey(0)
 
 
 def label_path_to_img_path(label_path):
@@ -11,6 +37,7 @@ def label_path_to_img_path(label_path):
     b = a.replace('_', '/')
 
     return label_path.replace(a, b, 1).replace('.xml', '.jpg')
+
 
 def check_path(path):
     if not os.path.exists(path):
