@@ -2,6 +2,10 @@
 from s_utils import *
 from code_decoder_manager import *
 import random
+import math
+import os
+from file_iterator import *
+
 
 class AbsTransfer(object):
     def __init__(self):
@@ -105,7 +109,9 @@ class CropFace(AbsTransfer):
 
         resize_img = img_resize(img, attr, scale)
 
-        bounding_box = resize_img[int(s_box[1]*scale):int(s_box[3]*scale), int(s_box[0]*scale):int(s_box[2]*scale)]
+        r_box = list(map(math.ceil, [i*scale for i in s_box]))
+
+        bounding_box = resize_img[r_box[1]:r_box[3], r_box[0]:r_box[2]]
 
         resize_label = {}
         resize_label['path'] = ''
@@ -115,40 +121,13 @@ class CropFace(AbsTransfer):
         resize_label['dim'] = 2
         resize_label['annos'] = [(1, 0)]
 
-        return bounding_box, resize_label
+        return (bounding_box, resize_label)
 
 
 if __name__ == '__main__':
-    # ins_decoder = CodeDecoderManager()
-    #
-    # ins_decoder.set_code_decoder(WFCodeDecoder())
-    #
-    # file = '/home/zjq/dp_data_set/wider_face/Annotations/32--Worker_Laborer_32_Worker_Laborer_Worker_Laborer_32_585.xml'
-    #
-    # jpg_codedecoder = CodeDecoderManager(JpgCodeDecoder())
-    #
-    # transfer = TransferManager(CropFace())
-    #
-    # root = '/home/zjq/dp_data_set/wider_face/WIDER_train/images'
-    #
-    # with open(file) as fp_label:
-    #     ret = ins_decoder.decode(fp_label)
-    #     # ins_decoder.set_code_decoder(TxtCodeDecoder())
-    #
-    #     read = join(root, ret['path'])
-    #     print(read)
+    root = '/home/zjq/dp_data_set/wider_face/Annotations'
+    img_path = '/home/zjq/dp_data_set/wider_face/WIDER_train/images/'
 
-    read = '/home/zjq/dp_data_set/wider_face/WIDER_train/images/32--Worker_Laborer/32_Worker_Laborer_Worker_Laborer_32_585.jpg'
+    fi = FileIterator(AbsOp=TransferFace(face_size=32, img_path=img_path), total=1000)
 
-    # with open(read) as ttt:
-    ret = cv2.imread(read)
-            # img = jpg_codedecoder.decode(read_file)
-            # img, label = transfer.change(img, ret)
-
-
-        # with open('./test.txt', 'w') as write_file:
-        #     ins_decoder.code(ret, write_file)
-
-    print(ret)
-
-        # print(label)
+    fi.iter_read(read_path=root)

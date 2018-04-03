@@ -4,6 +4,7 @@ import xml.etree.ElementTree as xml_et
 import cv2
 from s_utils import label_path_to_img_path
 
+
 class AbsCodeDecoder(object):
     def __init__(self):
         pass
@@ -39,37 +40,35 @@ class TxtCodeDecoder(AbsCodeDecoder):
         :param annos:
         :return:
         """
-        assert content
-        assert file
-
-        file.write(str(content['path']) + '\n')
-        file.write(str(content['width']) + ' ' + str(content['height']) + '\n')
-        file.write(str(content['num']) + ' ' + str(content['dim']) + '\n')
-        for box in content['annos']:
-            file.write(str(box).replace(',', '').strip('(').strip(')') + '\n')
+        with open(file, 'w') as fp:
+            fp.write(str(content['path']) + '\n')
+            fp.write(str(content['width']) + ' ' + str(content['height']) + '\n')
+            fp.write(str(content['num']) + ' ' + str(content['dim']) + '\n')
+            for box in content['annos']:
+                fp.write(str(box).replace(',', '').strip('(').strip(')') + '\n')
 
     def decode(self, file):
         """
         :param file_path:
         :return:
         """
-        assert file
-
         content = {}
-        content['path'] = file.readline().strip()
-        width, height = file.readline().strip().split(' ')
-        content['width'] = int(width)
-        content['height'] = int(height)
-        num, dim = file.readline().strip().split(' ')
-        content['num'] = int(num)
-        content['dim'] = int(dim)
-
         anno_list = []
-        for _ in range(int(num)):
-            item = file.readline().strip().split(' ')
-            anno_list.append(tuple(map(int, item)))
 
-        content['annos'] = anno_list
+        with open(file, 'r') as fp:
+            content['path'] = fp.readline().strip()
+            width, height = fp.readline().strip().split(' ')
+            content['width'] = int(width)
+            content['height'] = int(height)
+            num, dim = fp.readline().strip().split(' ')
+            content['num'] = int(num)
+            content['dim'] = int(dim)
+
+            for _ in range(int(num)):
+                item = fp.readline().strip().split(' ')
+                anno_list.append(tuple(map(int, item)))
+
+            content['annos'] = anno_list
 
         return content
 
@@ -84,8 +83,6 @@ class WFCodeDecoder(AbsCodeDecoder):
          :param: label_file
          :return:
          """
-        assert file
-
         """
         one anno format
         {'path':'...', 'width': 1024, 'high': 768, 'num': 10, 'dim': 4, 'anno': [[1, 2, 3, 4], [5, 6, 7, 8]]}
@@ -94,7 +91,9 @@ class WFCodeDecoder(AbsCodeDecoder):
         img_label = {}
         count = 0
 
-        tree = xml_et.parse(file)
+        with open(file) as fp_label:
+            tree = xml_et.parse(fp_label)
+
         root = tree.getroot()
 
         img_label['path'] = label_path_to_img_path(root.find('filename').text)
@@ -119,17 +118,6 @@ class WFCodeDecoder(AbsCodeDecoder):
         img_label['annos'] = box_label
 
         return img_label
-
-
-class JpgCodeDecoder(AbsCodeDecoder):
-    def code(self, content, file):
-        assert content
-        assert file
-        cv2.imwrite(file, content, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
-
-    def decode(self, file):
-        assert file
-        return cv2.imread(file)
 
 
 if __name__ == '__main__':

@@ -7,8 +7,17 @@ import re
 join = lambda a, b: os.path.join(a, b)
 
 
+def jpg_write(img, file):
+    cv2.imwrite(file, img, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
+
+
+def jpg_read(file):
+    return cv2.imread(file)
+
+
 def img_resize(img, attr, scale):
     return cv2.resize(img, (int(attr[0] * scale), int(attr[1] * scale)), interpolation=cv2.INTER_AREA)
+
 
 def draw_boxes(img, boxes):
     """
