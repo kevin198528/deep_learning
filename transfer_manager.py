@@ -11,12 +11,20 @@ class AbsTransfer(object):
     def __init__(self):
         pass
 
-    def change(self, img, label):
+    def change(self, img_label):
         """
         :param img:
         :param label:
         :return: img, label
         """
+        pass
+
+
+class AbsTransfer(object):
+    def __init__(self):
+        pass
+
+    def change(self, img_label):
         pass
 
 
@@ -27,8 +35,8 @@ class TransferManager(object):
     def set_transfer(self, AbsTransfer=None):
         self.__transfer = AbsTransfer
 
-    def change(self, img, label):
-        return self.__transfer.change(img, label)
+    def change(self, img_label):
+        return self.__transfer.change(img_label)
 
 
 class CropFace(AbsTransfer):
@@ -84,7 +92,9 @@ class CropFace(AbsTransfer):
 
         return False
 
-    def change(self, img, label):
+    def change(self, img_label):
+        img = img_label['img']
+        label = img_label['label']
         check_num = lambda item: item['num'] < 1
         check_box_size = lambda box: min(r_box[2] - r_box[0], r_box[3] - r_box[1]) <= self.__face_size
         attr = (label['width'], label['height'])
@@ -121,13 +131,8 @@ class CropFace(AbsTransfer):
         resize_label['dim'] = 2
         resize_label['annos'] = [(1, 0)]
 
-        return (bounding_box, resize_label)
+        return {'img': bounding_box, 'label': resize_label}
 
 
 if __name__ == '__main__':
-    root = '/home/zjq/dp_data_set/wider_face/Annotations'
-    img_path = '/home/zjq/dp_data_set/wider_face/WIDER_train/images/'
-
-    fi = FileIterator(AbsOp=TransferFace(face_size=32, img_path=img_path), total=1000)
-
-    fi.iter_read(read_path=root)
+    pass

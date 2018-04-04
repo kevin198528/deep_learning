@@ -15,7 +15,7 @@ class AbsCodeDecoder(object):
     """
     return content
     """
-    def decode(self, file):
+    def decode(self, file, path):
         pass
 
 
@@ -34,18 +34,27 @@ class CodeDecoderManager(object):
 
 
 class TxtCodeDecoder(AbsCodeDecoder):
-    def code(self, content, file):
+    def code(self, img_label, path_dict):
         """
         :param file_path:
         :param annos:
         :return:
         """
-        with open(file, 'w') as fp:
-            fp.write(str(content['path']) + '\n')
-            fp.write(str(content['width']) + ' ' + str(content['height']) + '\n')
-            fp.write(str(content['num']) + ' ' + str(content['dim']) + '\n')
-            for box in content['annos']:
+        img = img_label['img']
+        label = img_label['label']
+
+        label_path = join(path_dict['target_label_path'], label['path']) + '.txt'
+        img_path = join(path_dict['target_img_path'], label['path']) + '.jpg'
+
+        with open(label_path, 'w') as fp:
+            fp.write(str(label['path']) + '\n')
+            fp.write(str(label['width']) + ' ' + str(label['height']) + '\n')
+            fp.write(str(label['num']) + ' ' + str(label['dim']) + '\n')
+            for box in label['annos']:
                 fp.write(str(box).replace(',', '').strip('(').strip(')') + '\n')
+
+        jpg_write(img, img_path)
+
 
     def decode(self, file):
         """
@@ -77,7 +86,7 @@ class WFCodeDecoder(AbsCodeDecoder):
     def code(self, content, file):
         pass
 
-    def decode(self, file):
+    def decode(self, file, path):
         """
          decode one wider face xml data to general object data
          :param: label_file
@@ -117,26 +126,17 @@ class WFCodeDecoder(AbsCodeDecoder):
 
         img_label['annos'] = box_label
 
-        return img_label
+        """
+        img_path
+        """
+        img_file = join(path['src_img_path'], img_label['path'])
+
+        img = jpg_read(img_file)
+        if img is None:
+            return False
+
+        return {'img': img, 'label': img_label}
 
 
 if __name__ == '__main__':
-    ins_decoder = CodeDecoderManager()
-
-    # ins_decoder.set_code_decoder(WFCodeDecoder())
-
-    ins_decoder.set_code_decoder(TxtCodeDecoder())
-
-    # file = '/home/zjq/dp_data_set/wider_face/Annotations/32--Worker_Laborer_32_Worker_Laborer_Worker_Laborer_32_585.xml'
-
-    file = './test.txt'
-
-    write_file = './write.txt'
-
-    with open(file) as fp_label:
-        ret = ins_decoder.decode(fp_label)
-        # ins_decoder.set_code_decoder(TxtCodeDecoder())
-        with open(write_file, 'w') as write_file:
-            ins_decoder.code(ret, write_file)
-
-        print(ret)
+    pass

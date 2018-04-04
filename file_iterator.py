@@ -4,64 +4,29 @@ from transfer_manager import *
 from s_utils import *
 
 
-class AbsOp(object):
-    def __init__(self):
-        pass
-
-    def write_op(self):
-        pass
-
-    def read_op(self, file, num):
-        pass
-
-
-class TransferFace(AbsOp):
-    def __init__(self, face_size, img_path):
-        self.__face_size = face_size
-        self.__img_path = img_path
-
-    def read_op(self, file, num):
-        wf_decoder = CodeDecoderManager(WFCodeDecoder())
-
-        face24 = TransferManager(CropFace(face_size=self.__face_size))
-
-        ret = wf_decoder.decode(file)
-        # ins_decoder.set_code_decoder(TxtCodeDecoder())
-
-        jpg_file = join(self.__img_path, ret['path'])
-
-        img = jpg_read(jpg_file)
-        if img is None:
-            return False
-
-        ret = face24.change(img, ret)
-        if ret is False:
-            return False
-
-        # r_img, r_label
-        print(ret[1])
-        jpg_write(ret[0], './test/face' + str(num) + '.jpg')
-        return True
-
-
 class FileIterator(object):
-    def __init__(self, path_dict={}, total=10, div_num=100):
+    def __init__(self, path_dict={}, total=100, div_num=10):
         """
         path_dict={'src_img_path','src_label_path','target_img_path','target_label_path'}
         """
         self.__total = total
         self.__path_dict = path_dict
+        self.__div_num = int(total/div_num)
+
 
     def set_decoder(self, AbsCodeDecoder=None):
         self.__decoder = AbsCodeDecoder
 
+
     def set_coder(self, AbsCodeDecoder=None):
         self.__coder = AbsCodeDecoder
+
 
     def set_transfer(self, AbsTransfer=None):
         self.__transfer = AbsTransfer
 
-    def iter_read(self):
+
+    def iter_run(self):
         count = 0
         for root, dirs, files in os.walk(self.__path_dict['src_label_path']):
             for file in files:
@@ -69,17 +34,46 @@ class FileIterator(object):
                 if self.__total <= 0:
                     return True
 
-                # decode label (wider face for example)
-                label = self.__decoder(label_file)
+                try:
+                    img_label = self.__decoder.decode(label_file, self.__path_dict)
 
-                img = jpg_read(jpg_file)
-                if img is None:
-                    return False
+                    img_label = self.__transfer.change(img_label)
 
-                ret = face24.change(img, ret)
+                    group_id = int(count / self.__div_num)
+                    img_id = int(count % self.__div_num)
 
-                # transfer (crop 24 face for example)
-                self.__transfer.change(img, label)
+                    img_label['label']['path'] = str(group_id) + '/' + str(img_id)
 
-                if self.__op.read_op(file_path, self.__total):
-                    self.__total -= 1
+                    img_path = join(self.__path_dict['target_img_path'], str(group_id))
+
+                    check_path(img_path)
+
+                    label_path = join(self.__path_dict['target_label_path'], str(group_id))
+
+                    check_path(label_path)
+
+                    self.__coder.code(img_label, self.__path_dict)
+
+                except TypeError as reason:
+                    print('reason: ' + str(reason))
+                    continue
+
+                count += 1
+                self.__total -= 1
+
+
+if __name__ == '__main__':
+    path_dict = {'src_img_path': '/home/zjq/dp_data_set/wider_face/WIDER_train/images/',
+                 'src_label_path': '/home/zjq/dp_data_set/wider_face/Annotations/',
+                 'target_img_path': '/home/zjq/project/deep_learning/img',
+                 'target_label_path': '/home/zjq/project/deep_learning/label'}
+
+    fi = FileIterator(path_dict=path_dict, div_num=1)
+
+    fi.set_decoder(WFCodeDecoder())
+
+    fi.set_transfer(CropFace(face_size=300))
+
+    fi.set_coder(TxtCodeDecoder())
+
+    fi.iter_run()
