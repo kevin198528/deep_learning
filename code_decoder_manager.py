@@ -34,6 +34,10 @@ class CodeDecoderManager(object):
 
 
 class TxtCodeDecoder(AbsCodeDecoder):
+    def __init__(self, div_num=10):
+        self.__count = 0
+        self.__div_num = div_num
+
     def code(self, img_label, path_dict):
         """
         :param file_path:
@@ -42,6 +46,22 @@ class TxtCodeDecoder(AbsCodeDecoder):
         """
         img = img_label['img']
         label = img_label['label']
+
+        self.__count += 1
+
+        group_id = int(self.__count / self.__div_num)
+
+        img_id = int(self.__count % self.__div_num)
+
+        label['path'] = str(group_id) + '/' + str(img_id)
+
+        img_path = join(path_dict['target_img_path'], str(group_id))
+
+        check_path(img_path)
+
+        label_path = join(path_dict['target_label_path'], str(group_id))
+
+        check_path(label_path)
 
         label_path = join(path_dict['target_label_path'], label['path']) + '.txt'
         img_path = join(path_dict['target_img_path'], label['path']) + '.jpg'
