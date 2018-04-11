@@ -45,13 +45,14 @@ class TxtCodeDecoder(AbsCodeDecoder):
         :return:
         """
         img = img_label['img']
-        label = img_label['label']
 
-        self.__count += 1
+        label = img_label['label']
 
         group_id = int(self.__count / self.__div_num)
 
         img_id = int(self.__count % self.__div_num)
+
+        self.__count += 1
 
         label['path'] = str(group_id) + '/' + str(img_id)
 
@@ -158,5 +159,105 @@ class WFCodeDecoder(AbsCodeDecoder):
         return {'img': img, 'label': img_label}
 
 
+class PickleCodeDecoder(AbsCodeDecoder):
+    def __init__(self, div_num=1000):
+        self.__count = 0
+        self.__div_num = div_num
+
+    def code(self, img_label, path_dict):
+        """
+        :param file_path:
+        :param annos:
+        :return:
+        """
+        img = img_label['img']
+        label = img_label['label']
+
+        group_id = int(self.__count / self.__div_num)
+
+        img_id = int(self.__count % self.__div_num)
+
+        self.__count += 1
+
+        label['path'] = str(group_id) + '/' + str(img_id)
+
+        img_path = join(path_dict['target_img_path'], str(group_id))
+
+        check_path(img_path)
+
+        label_path = join(path_dict['target_label_path'], str(group_id))
+
+        check_path(label_path)
+
+        label_path = join(path_dict['target_label_path'], label['path']) + '.txt'
+        img_path = join(path_dict['target_img_path'], label['path']) + '.jpg'
+
+        with open(label_path, 'w') as fp:
+            fp.write(str(label['path']) + '\n')
+            fp.write(str(label['width']) + ' ' + str(label['height']) + '\n')
+            fp.write(str(label['num']) + ' ' + str(label['dim']) + '\n')
+            for box in label['annos']:
+                fp.write(str(box).replace(',', '').strip('(').strip(')') + '\n')
+
+        jpg_write(img, img_path)
+
+
+    # data_w, lable_w = my_shuffle(data_w, lable_w)
+    #
+    # dic = {'data': data_w, 'lable': lable_w}
+    #
+    # j = pickle.dumps(dic)
+    #
+    # f = open('10w_1_zoom_and_bounding_box_pic_pickle_test', 'wb')  # 注意是w是写入str,wb是写入bytes,j是'bytes'
+    # f.write(j)  # -------------------等价于pickle.dump(dic,f)
+    #
+    # f.close()
+
+
+
+    def decode(self, file):
+        """
+        :param file_path:
+        :return:
+        """
+        content = {}
+        anno_list = []
+
+        with open(file, 'r') as fp:
+            content['path'] = fp.readline().strip()
+            width, height = fp.readline().strip().split(' ')
+            content['width'] = int(width)
+            content['height'] = int(height)
+            num, dim = fp.readline().strip().split(' ')
+            content['num'] = int(num)
+            content['dim'] = int(dim)
+
+            for _ in range(int(num)):
+                item = fp.readline().strip().split(' ')
+                anno_list.append(tuple(map(int, item)))
+
+            content['annos'] = anno_list
+
+        return content
+
 if __name__ == '__main__':
-    pass
+
+    arr = np.array([], np.int32)
+
+    if arr.size is 0:
+        print(0)
+
+
+    a1 = np.array([[1, 1, 1]], np.int32)
+
+    a2 = np.array([[2, 2, 2]], np.int32)
+
+    a3 = np.array([[3, 3, 3]], np.int32)
+
+    a = np.append(a, a1, axis=0)
+
+    a = np.append(a, a2, axis=0)
+
+    print(a)
+
+    # pass

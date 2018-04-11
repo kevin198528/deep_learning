@@ -52,16 +52,18 @@ if __name__ == '__main__':
     #              'target_label_path': '/home/zjq/dp_data_set/24x24_face/label'}
 
     face0_dict = {'src_img_path': '/home/zjq/dp_data_set/wider_face/WIDER_train/images/',
-                 'src_label_path': '/home/zjq/dp_data_set/wider_face/Annotations/',
-                 'target_img_path': '/home/zjq/dp_data_set/zero_face/img',
-                 'target_label_path': '/home/zjq/dp_data_set/zero_face/label'}
+                  'src_label_path': '/home/zjq/dp_data_set/wider_face/Annotations/',
+                  'target_img_path': '/home/zjq/dp_data_set/zero_face/img',
+                  'target_label_path': '/home/zjq/dp_data_set/zero_face/label'}
 
     fi = FileIterator(path_dict=face0_dict)
 
     fi.set_decoder(WFCodeDecoder())
 
-    fi.set_transfer(CropFace(face_size=24))
+    # fi.set_transfer(CropFace(face_size=24))
 
-    fi.set_coder(TxtCodeDecoder(div_num=10))
+    fi.set_transfer(ZeroFace(box_size=96))
 
-    fi.iter_run(total=100)
+    fi.set_coder(TxtCodeDecoder(div_num=200))
+
+    fi.iter_run(total=200)
