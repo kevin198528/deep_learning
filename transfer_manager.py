@@ -93,6 +93,7 @@ class ZeroFace(AbsTransfer):
         
         """
         if check_num(label):
+            print('img has no label')
             return False
 
         face_boxes = np.array(label['annos'])
@@ -100,6 +101,7 @@ class ZeroFace(AbsTransfer):
         r_box = self.crop_square_box(attr, face_boxes)
 
         if r_box is False:
+            print('get no r_box')
             return False
 
         get_box = img[r_box[1]:r_box[3], r_box[0]:r_box[2]]
@@ -116,14 +118,16 @@ class ZeroFace(AbsTransfer):
 
 
 class CropFace(AbsTransfer):
-    def __init__(self, face_size=24):
+    def __init__(self, face_size=24, hue_flag=False):
         self.__face_size = face_size
+        self.__hue_flag = hue_flag
 
     def get_random_box(self, face_box):
         """
         face_box (x1, y1, x2, y2)
         :param face_box:
         :return:
+
         """
         w_face = face_box[2] - face_box[0]
         h_face = face_box[3] - face_box[1]
@@ -133,7 +137,7 @@ class CropFace(AbsTransfer):
         if h_max == h_min:
             return face_box
 
-        n_rand = np.random.randint(0, h_max - h_min, 1)[0]
+        n_rand = np.random.randint(0, h_max - h_min)
 
         if w_face > h_face:
             return (face_box[0], face_box[1] - n_rand, face_box[0] + h_max, face_box[1] - n_rand + h_max)
@@ -198,6 +202,20 @@ class CropFace(AbsTransfer):
         r_box = list(map(math.ceil, [i*scale for i in s_box]))
 
         bounding_box = resize_img[r_box[1]:r_box[3], r_box[0]:r_box[2]]
+
+        if bounding_box.shape[0] != bounding_box.shape[1]:
+            return False
+
+        if self.__hue_flag == True:
+            bounding_box = bounding_box.astype(np.uint8)
+
+            img_hsv = cv2.cvtColor(bounding_box, cv2.COLOR_BGR2HSV)
+
+            rand = np.random.randint(0, 180)
+
+            img_hsv[:, :, 0] = (img_hsv[:, :, 0] + rand) % 180
+
+            bounding_box = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR)
 
         resize_label = {}
         resize_label['path'] = ''

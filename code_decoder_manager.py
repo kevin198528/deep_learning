@@ -3,6 +3,8 @@ from s_utils import *
 import xml.etree.ElementTree as xml_et
 import cv2
 from s_utils import label_path_to_img_path
+import time
+import pickle
 
 
 class AbsCodeDecoder(object):
@@ -77,7 +79,7 @@ class TxtCodeDecoder(AbsCodeDecoder):
         jpg_write(img, img_path)
 
 
-    def decode(self, file):
+    def decode(self, file, path):
         """
         :param file_path:
         :return:
@@ -163,82 +165,84 @@ class PickleCodeDecoder(AbsCodeDecoder):
     def __init__(self, div_num=1000):
         self.__count = 0
         self.__div_num = div_num
+        self.__data = np.array([], np.int32)
+        self.__label = np.array([], np.int32)
+        self.__group_id = 0
 
     def code(self, img_label, path_dict):
         """
         :param file_path:
         :param annos:
         :return:
+
         """
         img = img_label['img']
         label = img_label['label']
 
-        group_id = int(self.__count / self.__div_num)
+        img = img[np.newaxis, :]
+        label = np.array(label['annos'], np.int32)
 
-        img_id = int(self.__count % self.__div_num)
+        if self.__data.size == 0 and self.__label.size == 0:
+            self.__data = img
+            self.__label = label
+        else:
+            print(img.shape)
+            self.__data = np.append(self.__data, img, axis=0)
+            self.__label = np.append(self.__label, label, axis=0)
 
         self.__count += 1
 
-        label['path'] = str(group_id) + '/' + str(img_id)
+        if self.__count % self.__div_num == 0:
+            file_name = str(self.__group_id) + '_' + str(self.__count) + '.pickle'
 
-        img_path = join(path_dict['target_img_path'], str(group_id))
+            write_path = join(path_dict['target_label_path'], str(file_name))
 
-        check_path(img_path)
+            with open(write_path, 'wb') as f_p:
+                f_p.write(pickle.dumps({'data': self.__data, 'label': self.__label}))
 
-        label_path = join(path_dict['target_label_path'], str(group_id))
+            self.__group_id += 1
+            self.__count = 0
 
-        check_path(label_path)
+            # print('data shape:' + str(self.__data.shape))
+            # print('label shape:' + str(self.__label.shape))
 
-        label_path = join(path_dict['target_label_path'], label['path']) + '.txt'
-        img_path = join(path_dict['target_img_path'], label['path']) + '.jpg'
+            self.__data = np.array([], np.int32)
+            self.__label = np.array([], np.int32)
 
-        with open(label_path, 'w') as fp:
-            fp.write(str(label['path']) + '\n')
-            fp.write(str(label['width']) + ' ' + str(label['height']) + '\n')
-            fp.write(str(label['num']) + ' ' + str(label['dim']) + '\n')
-            for box in label['annos']:
-                fp.write(str(box).replace(',', '').strip('(').strip(')') + '\n')
-
-        jpg_write(img, img_path)
+        return
 
 
-    # data_w, lable_w = my_shuffle(data_w, lable_w)
-    #
-    # dic = {'data': data_w, 'lable': lable_w}
-    #
-    # j = pickle.dumps(dic)
-    #
-    # f = open('10w_1_zoom_and_bounding_box_pic_pickle_test', 'wb')  # 注意是w是写入str,wb是写入bytes,j是'bytes'
-    # f.write(j)  # -------------------等价于pickle.dump(dic,f)
-    #
-    # f.close()
-
-
-
-    def decode(self, file):
+    def decode(self, file, path):
         """
         :param file_path:
         :return:
         """
-        content = {}
-        anno_list = []
+        with open(file, 'rb') as p_f:
+            data = pickle.load(p_f)
 
-        with open(file, 'r') as fp:
-            content['path'] = fp.readline().strip()
-            width, height = fp.readline().strip().split(' ')
-            content['width'] = int(width)
-            content['height'] = int(height)
-            num, dim = fp.readline().strip().split(' ')
-            content['num'] = int(num)
-            content['dim'] = int(dim)
+        return data
 
-            for _ in range(int(num)):
-                item = fp.readline().strip().split(' ')
-                anno_list.append(tuple(map(int, item)))
 
-            content['annos'] = anno_list
+        # content = {}
+        # anno_list = []
+        #
+        # with open(file, 'r') as fp:
+        #     content['path'] = fp.readline().strip()
+        #     width, height = fp.readline().strip().split(' ')
+        #     content['width'] = int(width)
+        #     content['height'] = int(height)
+        #     num, dim = fp.readline().strip().split(' ')
+        #     content['num'] = int(num)
+        #     content['dim'] = int(dim)
+        #
+        #     for _ in range(int(num)):
+        #         item = fp.readline().strip().split(' ')
+        #         anno_list.append(tuple(map(int, item)))
+        #
+        #     content['annos'] = anno_list
 
-        return content
+        # return content
+
 
 if __name__ == '__main__':
 
@@ -247,8 +251,15 @@ if __name__ == '__main__':
     if arr.size is 0:
         print(0)
 
+    a1 = np.array([1, 1, 1], np.int32)
 
-    a1 = np.array([[1, 1, 1]], np.int32)
+    print(a1.shape)
+
+    a1 = a1[np.newaxis, :]
+
+    print(a1.shape)
+
+    print(a1)
 
     a2 = np.array([[2, 2, 2]], np.int32)
 
@@ -259,5 +270,7 @@ if __name__ == '__main__':
     a = np.append(a, a2, axis=0)
 
     print(a)
+
+    print(b)
 
     # pass
