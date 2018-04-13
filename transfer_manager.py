@@ -207,7 +207,7 @@ class CropFace(AbsTransfer):
 
         bounding_box = resize_img[r_box[1]:r_box[3], r_box[0]:r_box[2]]
 
-        if bounding_box.shape[0] != bounding_box.shape[1]:
+        if bounding_box.shape[0] != self.__face_size or bounding_box.shape[1] != self.__face_size:
             return False
 
         if self.__hue_flag == True:

@@ -192,10 +192,11 @@ class PickleCodeDecoder(AbsCodeDecoder):
 
         self.__count += 1
 
-        if self.__count % self.__div_num == 0:
+        if (self.__count % self.__div_num) == 0:
             file_name = str(self.__group_id) + '_' + str(self.__count) + '.pickle'
 
             write_path = join(path_dict['target_label_path'], str(file_name))
+            print(write_path)
 
             with open(write_path, 'wb') as f_p:
                 f_p.write(pickle.dumps({'data': self.__data, 'label': self.__label}))
@@ -265,12 +266,8 @@ if __name__ == '__main__':
 
     a3 = np.array([[3, 3, 3]], np.int32)
 
-    a = np.append(a, a1, axis=0)
+    # a = np.append(a, a1, axis=0)
 
-    a = np.append(a, a2, axis=0)
-
-    print(a)
-
-    print(b)
+    # print(b)
 
     # pass

@@ -31,24 +31,27 @@ class FileIterator(object):
 
     def iter_run(self, total=100):
         total_in = total
-        for root, dirs, files in os.walk(self.__path_dict['src_label_path']):
-            for file in files:
-                label_file = join(root, file)
-                if total_in <= 0:
-                    print('total_in < 0')
-                    return True
+        while True:
+            for root, dirs, files in os.walk(self.__path_dict['src_label_path']):
+                for file in files:
+                    label_file = join(root, file)
+                    if total_in <= 0:
+                        print('total_in < 0')
+                        return True
 
-                try:
-                    img_label = self.__decoder.decode(label_file, self.__path_dict)
+                    try:
+                        img_label = self.__decoder.decode(label_file, self.__path_dict)
 
-                    img_label = self.__transfer.change(img_label)
+                        img_label = self.__transfer.change(img_label)
 
-                    self.__coder.code(img_label, self.__path_dict)
+                        self.__coder.code(img_label, self.__path_dict)
 
-                except TypeError as reason:
-                    print('reason: ' + str(reason))
-                    continue
-                total_in -= 1
+                    except TypeError as reason:
+                        # print('reason: ' + str(reason))
+                        continue
+                    total_in -= 1
+                    print(total_in)
+
 
 
 if __name__ == '__main__':
