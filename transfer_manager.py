@@ -42,8 +42,9 @@ class TransferManager(object):
 
 
 class ZeroFace(AbsTransfer):
-    def __init__(self, box_size=24):
+    def __init__(self, box_size=24, hue_flag=False):
         self.__box_size = box_size
+        self.__hue_flag = hue_flag
 
     def get_random_box(self, attr):
         """
@@ -105,6 +106,9 @@ class ZeroFace(AbsTransfer):
             return False
 
         get_box = img[r_box[1]:r_box[3], r_box[0]:r_box[2]]
+
+        if self.__hue_flag == True:
+            get_box = change_hue(get_box)
 
         resize_label = {}
         resize_label['path'] = ''
@@ -207,15 +211,7 @@ class CropFace(AbsTransfer):
             return False
 
         if self.__hue_flag == True:
-            bounding_box = bounding_box.astype(np.uint8)
-
-            img_hsv = cv2.cvtColor(bounding_box, cv2.COLOR_BGR2HSV)
-
-            rand = np.random.randint(0, 180)
-
-            img_hsv[:, :, 0] = (img_hsv[:, :, 0] + rand) % 180
-
-            bounding_box = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR)
+            bounding_box = change_hue(bounding_box)
 
         resize_label = {}
         resize_label['path'] = ''

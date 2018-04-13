@@ -10,6 +10,11 @@ class FileIterator(object):
         path_dict={'src_img_path','src_label_path','target_img_path','target_label_path'}
 
         """
+        for value in path_dict.values():
+            if os.path.exists(value) is False:
+                print('path_dict is empty')
+                assert False
+
         self.__path_dict = path_dict
 
     def set_decoder(self, AbsCodeDecoder=None):
@@ -30,6 +35,7 @@ class FileIterator(object):
             for file in files:
                 label_file = join(root, file)
                 if total_in <= 0:
+                    print('total_in < 0')
                     return True
 
                 try:
@@ -47,61 +53,37 @@ class FileIterator(object):
 
 if __name__ == '__main__':
     # face24_dict = {'src_img_path': '/home/zjq/dp_data_set/wider_face/WIDER_train/images/',
-    #              'src_label_path': '/home/zjq/dp_data_set/wider_face/Annotations/',
-    #              'target_img_path': '/home/zjq/dp_data_set/24x24_face/img',
-    #              'target_label_path': '/home/zjq/dp_data_set/24x24_face/label'}
+    #                'src_label_path': '/home/zjq/dp_data_set/wider_face/Annotations/',
+    #                'target_img_path': '/home/zjq/dp_data_set/24x24_face/img',
+    #                'target_label_path': '/home/zjq/dp_data_set/24x24_face/label'}
 
-    # face0_dict = {'src_img_path': '/home/zjq/dp_data_set/wider_face/WIDER_train/images/',
-    #               'src_label_path': '/home/zjq/dp_data_set/wider_face/Annotations/',
-    #               'target_img_path': '/home/zjq/dp_data_set/zero_face/img',
-    #               'target_label_path': '/home/zjq/dp_data_set/zero_face/label'}
+    face_dict = {'src_img_path': '/home/zjq/dp_data_set/wider_face/WIDER_train/images/',
+                  'src_label_path': '/home/zjq/dp_data_set/wider_face/Annotations/',
+                  'target_img_path': '/home/zjq/dp_data_set/zero_face/img',
+                  'target_label_path': '/home/zjq/dp_data_set/zero_face/label'}
 
     # face0_dict = {'src_img_path': '/home/zjq/dp_data_set/wider_face/WIDER_train/images/',
     #               'src_label_path': '/home/zjq/dp_data_set/wider_face/Annotations/',
     #               'target_img_path': '/home/zjq/dp_data_set/zero_face/img',
     #               'target_label_path': '/home/zjq/dp_data_set/pickle_test'}
 
-    face24_dict = {'src_img_path': '/home/zjq/dp_data_set/wider_face/WIDER_train/images/',
-                  'src_label_path': '/home/zjq/dp_data_set/wider_face/Annotations/',
-                  'target_img_path': '/home/zjq/dp_data_set/zero_face/img',
-                  'target_label_path': '/home/zjq/dp_data_set/face_24/'}
+    # face24_dict = {'src_img_path': '/home/zjq/dp_data_set/wider_face/WIDER_train/images/',
+    #               'src_label_path': '/home/zjq/dp_data_set/wider_face/Annotations/',
+    #               'target_img_path': '/home/zjq/dp_data_set/zero_face/img',
+    #               'target_label_path': '/home/zjq/dp_data_set/face_24/'}
 
-    # fi = FileIterator(path_dict=face24_dict)
-    #
-    # fi.set_decoder(WFCodeDecoder())
-    #
+    fi = FileIterator(path_dict=face_dict)
+
+    fi.set_decoder(WFCodeDecoder())
+
     # fi.set_transfer(CropFace(face_size=24, hue_flag=True))
-    #
-    # # fi.set_transfer(ZeroFace(box_size=24))
-    #
-    # # fi.set_coder(TxtCodeDecoder(div_num=5000))
-    #
+
+    fi.set_transfer(ZeroFace(box_size=24, hue_flag=True))
+
+    fi.set_coder(TxtCodeDecoder(div_num=100))
+
+    # print(4)
     # fi.set_coder(PickleCodeDecoder(div_num=5000))
-    #
-    # fi.iter_run(total=5000)
 
-    num = 800
+    fi.iter_run(total=100)
 
-    pc = PickleCodeDecoder()
-    data = pc.decode(file='/home/zjq/dp_data_set/face_24/0_5000.pickle', path='')
-
-    img = data['data'][num]
-
-    print(data['data'].shape)
-    print(data['label'].shape)
-
-    # show(data['data'][num])
-
-    img = img.astype(np.uint8)
-
-    img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-
-    rand = np.random.randint(0, 90)
-
-    img_hsv[:, :, 0] = (img_hsv[:, :, 0] + rand) % 90
-
-    img = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR)
-
-    # img = np.transpose(img, (1, 0, 2))
-
-    show(img)

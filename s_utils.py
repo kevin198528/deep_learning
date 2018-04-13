@@ -83,6 +83,16 @@ def iou(box, boxes):
     ovr = inter / (box_area + area - inter)
     return ovr
 
+def change_hue(img):
+    img_tmp = img.astype(np.uint8)
+
+    img_hsv = cv2.cvtColor(img_tmp, cv2.COLOR_BGR2HSV)
+
+    rand = np.random.randint(0, 180)
+
+    img_hsv[:, :, 0] = (img_hsv[:, :, 0] + rand) % 180
+
+    return cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR)
 
 if __name__ == '__main__':
     print(join('hello', 'world'))
