@@ -247,11 +247,11 @@ class PickleCodeDecoder(AbsCodeDecoder):
 if __name__ == '__main__':
     pcd = PickleCodeDecoder()
 
-    p_data = pcd.decode(file='/home/zjq/dp_data_set/face0_pickle/0_5000.pickle', path='')
+    p_data = pcd.decode(file='/home/zjq/dp_data_set/face24_pickle/0_5000.pickle', path='')
 
     # print(p_data['label'][5])
 
-    # show(p_data['data'][5])
+    show(p_data['data'][15])
 
     # print(p_data['data'][0])
 
