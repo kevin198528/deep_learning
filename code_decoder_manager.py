@@ -223,7 +223,6 @@ class PickleCodeDecoder(AbsCodeDecoder):
 
         return data
 
-
         # content = {}
         # anno_list = []
         #
@@ -246,25 +245,34 @@ class PickleCodeDecoder(AbsCodeDecoder):
 
 
 if __name__ == '__main__':
+    pcd = PickleCodeDecoder()
 
-    arr = np.array([], np.int32)
+    p_data = pcd.decode(file='/home/zjq/dp_data_set/face0_pickle/0_5000.pickle', path='')
 
-    if arr.size is 0:
-        print(0)
+    # print(p_data['label'][5])
 
-    a1 = np.array([1, 1, 1], np.int32)
+    # show(p_data['data'][5])
 
-    print(a1.shape)
+    # print(p_data['data'][0])
 
-    a1 = a1[np.newaxis, :]
-
-    print(a1.shape)
-
-    print(a1)
-
-    a2 = np.array([[2, 2, 2]], np.int32)
-
-    a3 = np.array([[3, 3, 3]], np.int32)
+    # arr = np.array([], np.int32)
+    #
+    # if arr.size is 0:
+    #     print(0)
+    #
+    # a1 = np.array([1, 1, 1], np.int32)
+    #
+    # print(a1.shape)
+    #
+    # a1 = a1[np.newaxis, :]
+    #
+    # print(a1.shape)
+    #
+    # print(a1)
+    #
+    # a2 = np.array([[2, 2, 2]], np.int32)
+    #
+    # a3 = np.array([[3, 3, 3]], np.int32)
 
     # a = np.append(a, a1, axis=0)
 
