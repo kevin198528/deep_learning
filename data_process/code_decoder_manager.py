@@ -1,8 +1,8 @@
 # from include import *
-from s_utils import *
+from utils.s_utils import *
 import xml.etree.ElementTree as xml_et
 import cv2
-from s_utils import label_path_to_img_path
+# from s_utils import label_path_to_img_path
 import time
 import pickle
 
@@ -163,11 +163,12 @@ class WFCodeDecoder(AbsCodeDecoder):
 
 class PickleCodeDecoder(AbsCodeDecoder):
     def __init__(self, div_num=1000):
-        self.__count = 0
-        self.__div_num = div_num
         self.__data = np.array([], np.int32)
         self.__label = np.array([], np.int32)
+
+        self.__count = 0
         self.__group_id = 0
+        self.__div_num = div_num
 
     def code(self, img_label, path_dict):
         """

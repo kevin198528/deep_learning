@@ -83,6 +83,7 @@ def iou(box, boxes):
     ovr = inter / (box_area + area - inter)
     return ovr
 
+
 def change_hue(img):
     img_tmp = img.astype(np.uint8)
 
@@ -94,11 +95,39 @@ def change_hue(img):
 
     return cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR)
 
-if __name__ == '__main__':
-    print(join('hello', 'world'))
-    label_path = "47--Matador_Bullfighter_47_Matador_Bullfighter_matadorbullfighting_47_172.xml"
 
-    print(label_path_to_img_path(label_path))
+def merge_shuffle(d_a, d_b):
+    d_c = np.hstack((d_a, d_b))
+    for _ in range(10):
+        np.random.shuffle(d_c)
+
+    return d_c[:, 0:d_a.shape[1]], d_c[:, d_a.shape[1]:]
+
+
+# def get_random_idx(num, start, end):
+#     idx = np.array([], dtype=np.int32)
+#     for _ in range(num):
+#         rand_idx = np.random.randint(start, end, 1)[0]
+#         idx = np.append(idx, rand_idx)
+#
+#     return idx
+
+
+if __name__ == '__main__':
+    # a = np.array([0, 11, 22, 33, 44, 55], np.int32)
+
+    # print(a[[0, 3, 5]])
+
+    a = np.random.randint(0, 10)
+
+    # a = get_random_idx(10, 0, 100)
+
+    print(a)
+
+    # print(join('hello', 'world'))
+    # label_path = "47--Matador_Bullfighter_47_Matador_Bullfighter_matadorbullfighting_47_172.xml"
+    #
+    # print(label_path_to_img_path(label_path))
 
     # box = np.array([0, 0, 3, 3]).astype(np.float32)
     # boxes = np.array([[0, 0, 4, 4]]).astype(np.float32)
