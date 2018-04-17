@@ -108,3 +108,5 @@ venv.bak/
 doc/
 *.txt
 *.jpg
+check_point/
+summary/
