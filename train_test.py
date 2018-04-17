@@ -3,6 +3,7 @@ import numpy as np
 import pickle
 import time
 import matplotlib.pyplot as plt
+import datetime
 
 from tensorflow.examples.tutorials.mnist import input_data
 # from data.batch_data_manage import *
@@ -413,8 +414,10 @@ with tf.Session() as sess:
         #
         # idx_b = idx_a%10
         # t_name = 'dataA'
-        print('-----:' + str(i))
+
         idx_b = 0
+
+        s_time = datetime.datetime.now()
 
         # if idx_b == 0:
         # rand_idx = np.random.randint(0, train_num, 1)[0]
@@ -452,6 +455,14 @@ with tf.Session() as sess:
             saver.save(sess, check_point_path + 'pic_check', i)
         # print('train run')
         # sess.run(update_ema, {x: batch[0], y_: batch[1], keep_prob: 1.0, tst: False, iter: i})
+
+        e_time = datetime.datetime.now()
+
+        use_time = (e_time - s_time).microseconds/1000
+
+        print(use_time)
+
+        print('-----:' + str(i) + '---' + str(use_time))
 
     saver.save(sess, check_point_path + 'pic_check', i)
 
