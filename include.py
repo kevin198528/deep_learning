@@ -10,10 +10,11 @@ import pickle
 import matplotlib.pyplot as plt
 import re
 import random
-from code_decoder_manager import *
-from file_iterator import *
+from data_process.code_decoder_manager import *
+from data_process.file_iterator import *
+from data_process.transfer_manager import *
 
-from s_utils import *
+from utils.s_utils import *
 
 if __name__ == '__main__':
     # print(join('hello', 'world'))
