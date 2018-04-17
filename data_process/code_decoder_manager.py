@@ -160,6 +160,117 @@ class WFCodeDecoder(AbsCodeDecoder):
 
         return {'img': img, 'label': img_label}
 
+class MyCodeDecoder(AbsCodeDecoder):
+    def code(self, content, file):
+        pass
+
+    def decode(self, file, path):
+        """
+         decode one wider face xml data to general object data
+         :param: label_file
+         :return:
+         """
+        """
+        one anno format
+        {'path':'...', 'width': 1024, 'high': 768, 'num': 10, 'dim': 4, 'anno': [[1, 2, 3, 4], [5, 6, 7, 8]]}
+
+        """
+        img_label = {}
+        count = 0
+
+        with open(file) as fp_label:
+            tree = xml_et.parse(fp_label)
+
+        root = tree.getroot()
+
+        img_label['path'] = root.find('path').text
+        img_label['width'] = int(root.find('size').find('width').text)
+        img_label['height'] = int(root.find('size').find('height').text)
+
+        for _ in root.iter('object'):
+            count += 1
+
+        img_label['num'] = count
+        img_label['dim'] = 4
+
+        box_label = []
+        for obj in root.iter('object'):
+            xmlbox = obj.find('bndbox')
+            box = (int(xmlbox.find('xmin').text),
+                   int(xmlbox.find('ymin').text),
+                   int(xmlbox.find('xmax').text),
+                   int(xmlbox.find('ymax').text))
+            box_label.append(box)
+
+        img_label['annos'] = box_label
+
+        """
+        img_path
+        """
+        img_file = join(path['src_img_path'], img_label['path'])
+
+        img = jpg_read(img_file)
+        if img is None:
+            return False
+
+        return {'img': img, 'label': img_label}
+
+
+class WrjCodeDecoder(AbsCodeDecoder):
+    def code(self, content, file):
+        pass
+
+    def decode(self, file, path):
+        """
+         decode one wider face xml data to general object data
+         :param: label_file
+         :return:
+         """
+        """
+        one anno format
+        {'path':'...', 'width': 1024, 'high': 768, 'num': 10, 'dim': 4, 'anno': [[1, 2, 3, 4], [5, 6, 7, 8]]}
+
+        """
+        img_label = {}
+        count = 0
+
+        with open(file) as fp_label:
+            tree = xml_et.parse(fp_label)
+
+        root = tree.getroot()
+
+        img_label['path'] = '0' + '/' + str(root.find('filename').text) + '.jpg'
+        img_label['width'] = int(root.find('size').find('width').text)
+        img_label['height'] = int(root.find('size').find('height').text)
+
+        for _ in root.iter('object'):
+            count += 1
+
+        img_label['num'] = count
+        img_label['dim'] = 4
+
+        box_label = []
+        for obj in root.iter('object'):
+            xmlbox = obj.find('bndbox')
+            box = (int(xmlbox.find('xmin').text),
+                   int(xmlbox.find('ymin').text),
+                   int(xmlbox.find('xmax').text),
+                   int(xmlbox.find('ymax').text))
+            box_label.append(box)
+
+        img_label['annos'] = box_label
+
+        """
+        img_path
+        """
+        img_file = join(path['src_img_path'], img_label['path'])
+        # print(img_file)
+        img = jpg_read(img_file)
+        if img is None:
+            return False
+
+        return {'img': img, 'label': img_label}
+
 
 class PickleCodeDecoder(AbsCodeDecoder):
     def __init__(self, div_num=1000):
@@ -187,7 +298,6 @@ class PickleCodeDecoder(AbsCodeDecoder):
             self.__data = img
             self.__label = label
         else:
-            print(img.shape)
             self.__data = np.append(self.__data, img, axis=0)
             self.__label = np.append(self.__label, label, axis=0)
 
@@ -198,6 +308,7 @@ class PickleCodeDecoder(AbsCodeDecoder):
 
             write_path = join(path_dict['target_label_path'], str(file_name))
             print(write_path)
+            print(self.__group_id)
 
             with open(write_path, 'wb') as f_p:
                 f_p.write(pickle.dumps({'data': self.__data, 'label': self.__label}))
@@ -246,13 +357,28 @@ class PickleCodeDecoder(AbsCodeDecoder):
 
 
 if __name__ == '__main__':
+    train_img = '/home/kevin/data_set/face24_pickle/0_5000.pickle'
+    test_img = '/home/kevin/data_set/2w_pic_pickle_test'
+
+    my_test_img = '/home/kevin/data_set/face24_test_pickle/0_5000.pickle'
+
+    my_face_img = '/home/kevin/data_set/pickle_img_data/my_face_pickle/0_1.pickle'
+
+    wrj_img = '/home/kevin/data_set/pickle_img_data/train/wrj_pickle/0_900.pickle'
+
+    valid = '/home/kevin/data_set/pickle_img_data/valid/0_6.pickle'
+
     pcd = PickleCodeDecoder()
 
-    p_data = pcd.decode(file='/home/zjq/dp_data_set/face24_pickle/0_5000.pickle', path='')
+    p_data = pcd.decode(file=valid, path='')
 
-    # print(p_data['label'][5])
+    num = 5
 
-    show(p_data['data'][15])
+    print(p_data['data'][num])
+
+    print(p_data['label'][num])
+
+    show(p_data['data'][num])
 
     # print(p_data['data'][0])
 

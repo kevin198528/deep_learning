@@ -68,29 +68,29 @@ def variable_summaries(var):
         tf.summary.histogram('his', var)
 
 # test_file_name = '../data/face_5w_data/1w_pic_pickle_test'
-test_file_name = './1w_pic_pickle_test'
-
-f_test = open(test_file_name, 'rb')
-record_test = pickle.loads(f_test.read())
-
-data_test = record_test['data']
-label_test = record_test['lable']
-data_test = np.reshape(data_test, [-1, 24*24*3])
-mean = np.mean(data_test, axis=1).reshape(-1, 1)
-std = np.std(data_test, axis=1).reshape(-1, 1)
-data_test = (data_test - mean)/(std + 0.0001)
-data_test = np.reshape(data_test, [-1, 24, 24, 3])
-
-test_img_path = './hand_negative_img'
-img_test = open(test_img_path, 'rb')
-img_record = pickle.loads(img_test.read())
-
-img_data = img_record['data']
-img_data = np.reshape(img_data, [-1, 24*24*3])
-mean = np.mean(img_data, axis=1).reshape(-1, 1)
-std = np.std(img_data, axis=1).reshape(-1, 1)
-img_data = (img_data - mean)/(std + 0.0001)
-img_data = np.reshape(img_data, [-1, 24, 24, 3])
+# test_file_name = '/home/kevin/data_set/1w_pic_pickle_test'
+#
+# f_test = open(test_file_name, 'rb')
+# record_test = pickle.loads(f_test.read())
+#
+# data_test = record_test['data']
+# label_test = record_test['lable']
+# data_test = np.reshape(data_test, [-1, 24*24*3])
+# mean = np.mean(data_test, axis=1).reshape(-1, 1)
+# std = np.std(data_test, axis=1).reshape(-1, 1)
+# data_test = (data_test - mean)/(std + 0.0001)
+# data_test = np.reshape(data_test, [-1, 24, 24, 3])
+#
+# test_img_path = '/home/kevin/data_set/hand_negative_img'
+# img_test = open(test_img_path, 'rb')
+# img_record = pickle.loads(img_test.read())
+#
+# img_data = img_record['data']
+# img_data = np.reshape(img_data, [-1, 24*24*3])
+# mean = np.mean(img_data, axis=1).reshape(-1, 1)
+# std = np.std(img_data, axis=1).reshape(-1, 1)
+# img_data = (img_data - mean)/(std + 0.0001)
+# img_data = np.reshape(img_data, [-1, 24, 24, 3])
 
 
 # pic = data[62]
@@ -110,7 +110,7 @@ img_data = np.reshape(img_data, [-1, 24, 24, 3])
 
 
 # define the output value dim
-label_dim = 2
+label_dim = 3
 
 x = tf.placeholder("float", shape=[None, 24, 24, 3])
 y_ = tf.placeholder("float", shape=[None, label_dim])
@@ -373,9 +373,17 @@ def get_random_idx(count, max_num):
 
     return rand_idx
 
-bdm = BatchDataManage(batch_num=50, file_path=['/home/zjq/dp_data_set/face0_pickle', '/home/zjq/dp_data_set/face24_pickle'])
+p = ['/home/kevin/data_set/pickle_img_data/train/face_pickle',
+    '/home/kevin/data_set/pickle_img_data/train/beijin_pickle',
+     '/home/kevin/data_set/pickle_img_data/train/wrj_pickle']
+
+
+bdm = BatchDataManage(batch_num=50, file_path=p)
 # bdm = BatchDataManage(batch_num=50, file_path='../data/face_0_1_shuffle')
 
+bdm_test = BatchDataManage(batch_num=50, reload_flag=False, file_path=['/home/kevin/data_set/pickle_img_data/test/face_pickle', '/home/kevin/data_set/pickle_img_data/test/beijin_pickle', '/home/kevin/data_set/pickle_img_data/test/wrj_pickle'])
+
+bdm_my = GetBatchData(batch_num=6, reload_flag=False, file_path=['/home/kevin/data_set/pickle_img_data/valid/'])
 
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
@@ -384,26 +392,18 @@ with tf.Session() as sess:
 
     saver = tf.train.Saver(tf.global_variables())
 
-    # module_file = tf.train.latest_checkpoint(check_point_path)
-    # saver.restore(sess, './check_point/pic_check-5000')
+    module_file = tf.train.latest_checkpoint(check_point_path)
+    saver.restore(sess, './check_point/pic_check-5000')
     #
-    # batch_data, batch_label = bdm.get_batch_data_label()
+    # batch_data, batch_label = bdm_my.get_batch_data_label()
     #
-    # # batch_data = data_test[0:batch_size, :, :, :]
-    # # batch_label = label_test[0:batch_size, :]
-    # # print(batch_label)
-    # # print('\n')
-    #
-    # # test final img test data
-    # y_conv_test = y_conv.eval(feed_dict={x: img_data, y_: batch_label, test_flag: True, keep_prob: 1.0})
+    # y_conv_test = y_conv.eval(feed_dict={x: batch_data, y_: batch_label, test_flag: True, keep_prob: 1.0})
     # print(y_conv_test)
-
-
-    # test_accuracy = cross_entropy.eval(feed_dict={x: batch_data, y_: batch_label, test_flag: True, keep_prob: 1.0})
-    # print("step %d, test accuracy %g" % (i, test_accuracy))
-    # print(y_conv_test)
-    # data_tmp, label_tmp = my_shuffle(data, label)
-
+    # print(batch_label)
+    #
+    # for img in batch_data:
+    #     show(img)
+    #
     # time.sleep(1000)
 
     for i in range(100000):
@@ -445,8 +445,11 @@ with tf.Session() as sess:
 
             rand_idx = get_random_idx(batch_size, 9000)
 
-            t_data = data_test[rand_idx, :, :, :]
-            t_label = label_test[rand_idx, :]
+            # t_data = data_test[rand_idx, :, :, :]
+            # t_label = label_test[rand_idx, :]
+
+            t_data, t_label = bdm_test.get_batch_data_label()
+
             test_accuracy = cross_entropy.eval(feed_dict={x: t_data, y_: t_label, test_flag: True, keep_prob: 1.0})
             print("step %d, test accuracy %g" % (i, test_accuracy))
 
@@ -458,11 +461,11 @@ with tf.Session() as sess:
 
         e_time = datetime.datetime.now()
 
-        use_time = (e_time - s_time).microseconds/1000
+        use_time = (e_time - s_time)
 
-        print(use_time)
+        # print(use_time)
 
-        print('-----:' + str(i) + '---' + str(use_time))
+        # print('-----:' + str(i) + '---' + str(use_time))
 
     saver.save(sess, check_point_path + 'pic_check', i)
 
