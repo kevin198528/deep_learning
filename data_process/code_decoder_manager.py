@@ -355,6 +355,26 @@ class PickleCodeDecoder(AbsCodeDecoder):
 
         # return content
 
+def normal_data(data):
+    data = np.reshape(data, [24*24*3])
+    d_max = max(data)
+    d_min = min(data)
+
+    print(d_max)
+
+    print(d_min)
+
+    data = (data - d_min) / (d_max - d_min)
+
+    nor_data = np.reshape(data, [24, 24, 3])
+
+    # mean = np.mean(data)
+    # std = np.std(data)
+    # data = (data - mean) / (std + 0.00001)
+    # nor_data = np.reshape(data, [24, 24, 3])
+
+    return nor_data
+
 
 if __name__ == '__main__':
     train_img = '/home/kevin/data_set/face24_pickle/0_5000.pickle'
@@ -372,13 +392,23 @@ if __name__ == '__main__':
 
     p_data = pcd.decode(file=valid, path='')
 
-    num = 5
+    num = 0
 
-    print(p_data['data'][num])
+    d = p_data['data'][num]
 
-    print(p_data['label'][num])
+    nor_d = normal_data(d)
 
-    show(p_data['data'][num])
+
+    l = p_data['label'][num]
+
+    show(d)
+    show(nor_d)
+
+    # print(normal_data(p_data['data'][num]))
+    #
+    # print(p_data['label'][num])
+
+    # show(p_data['data'][num])
 
     # print(p_data['data'][0])
 

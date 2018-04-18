@@ -46,7 +46,8 @@ class BatchDataManage(object):
         fill_label = np.array([], np.float32)
 
         for class_data in self.__file_io_list:
-            class_sample_data = random.sample(class_data, math.ceil(len(class_data)*0.2))
+            class_sample_data = random.sample(class_data, math.ceil(len(class_data)*0.04))
+            print(len(class_sample_data))
 
             for class_file in class_sample_data:
                 with open(class_file, 'rb') as f_p:
@@ -57,9 +58,17 @@ class BatchDataManage(object):
                     dim_3 = data.shape[3]
                     label = record['label']
                     data = np.reshape(data, [-1, dim_1 * dim_2 * dim_3])
-                    mean = np.mean(data, axis=1).reshape(-1, 1)
-                    std = np.std(data, axis=1).reshape(-1, 1)
-                    data = (data - mean) / (std + 0.00001)
+
+                    # mean = np.mean(data, axis=1).reshape(-1, 1)
+                    # std = np.std(data, axis=1).reshape(-1, 1)
+                    # data = (data - mean) / (std + 0.00001)
+
+                    d_max = np.max(data, axis=1).reshape(-1, 1)
+                    d_min = np.min(data, axis=1).reshape(-1, 1)
+                    data = (data - d_min) / (abs(d_max - d_min) + 0.00001)
+
+                    # print(data)
+
                     data = np.reshape(data, [-1, dim_1, dim_2, dim_3])
 
                     if fill_data.size == 0 and fill_label.size == 0:
@@ -136,9 +145,15 @@ class GetBatchData(object):
                     dim_3 = data.shape[3]
                     label = record['label']
                     data = np.reshape(data, [-1, dim_1 * dim_2 * dim_3])
-                    mean = np.mean(data, axis=1).reshape(-1, 1)
-                    std = np.std(data, axis=1).reshape(-1, 1)
-                    data = (data - mean) / (std + 0.00001)
+
+                    # mean = np.mean(data, axis=1).reshape(-1, 1)
+                    # std = np.std(data, axis=1).reshape(-1, 1)
+                    # data = (data - mean) / (std + 0.00001)
+
+                    d_max = np.max(data, axis=1).reshape(-1, 1)
+                    d_min = np.min(data, axis=1).reshape(-1, 1)
+                    data = (data - d_min) / (d_max - d_min)
+
                     data = np.reshape(data, [-1, dim_1, dim_2, dim_3])
 
                     if fill_data.size == 0 and fill_label.size == 0:

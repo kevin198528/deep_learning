@@ -112,7 +112,7 @@ def variable_summaries(var):
 # define the output value dim
 label_dim = 3
 
-x = tf.placeholder("float", shape=[None, 24, 24, 3])
+x = tf.placeholder("float", shape=[None, 36, 36, 3])
 y_ = tf.placeholder("float", shape=[None, label_dim])
 
 B1_A = tf.Variable(tf.random_normal([32], stddev=0.01))
@@ -141,7 +141,7 @@ test_flag = tf.placeholder(dtype=tf.bool)
 
 keep_prob = tf.placeholder("float")
 
-W = tf.Variable(tf.zeros([24*24*3, 1]))
+W = tf.Variable(tf.zeros([36*36*3, 1]))
 b = tf.Variable(tf.zeros([1]))
 
 # W_fc2 = weight_variable([1024, 1])
@@ -196,14 +196,14 @@ b_conv3_B = bias_variable([128])
 # print(layer1[1].shape)
 
 
-W_conv4_A = weight_variable([3, 3, 128, 512])
+W_conv4_A = weight_variable([5, 5, 128, 512])
 W_conv4_B = weight_variable([1, 1, 512, 1024])
 W_conv4_C = weight_variable([1, 1, 1024, label_dim])
 
 # W_fc1 = weight_variable([3*3*256, 1024])
 # b_fc1 = bias_variable([1024])
 
-x_image = tf.reshape(x, [-1, 24, 24, 3])
+x_image = tf.reshape(x, [-1, 36, 36, 3])
 
 bnepsilon = 1e-5
 
@@ -350,15 +350,15 @@ i = 0
 
 
 def my_shuffle(data, label):
-    data = np.reshape(data, [-1, 24 * 24 * 3])
+    data = np.reshape(data, [-1, 36 * 36 * 3])
     c = np.hstack((data, label))
 
     np.random.shuffle(c)
 
-    data = c[:, 0:24*24*3]
-    label = c[:, 24*24*3:]
+    data = c[:, 0:36*36*3]
+    label = c[:, 36*36*3:]
 
-    data = np.reshape(data, [-1, 24, 24, 3])
+    data = np.reshape(data, [-1, 36, 36, 3])
 
     return data, label
 
@@ -393,18 +393,19 @@ with tf.Session() as sess:
     saver = tf.train.Saver(tf.global_variables())
 
     module_file = tf.train.latest_checkpoint(check_point_path)
-    saver.restore(sess, './check_point/pic_check-5000')
-    #
-    # batch_data, batch_label = bdm_my.get_batch_data_label()
-    #
-    # y_conv_test = y_conv.eval(feed_dict={x: batch_data, y_: batch_label, test_flag: True, keep_prob: 1.0})
-    # print(y_conv_test)
-    # print(batch_label)
-    #
-    # for img in batch_data:
-    #     show(img)
-    #
-    # time.sleep(1000)
+    saver.restore(sess, './check_point/pic_check-2000')
+
+    batch_data, batch_label = bdm_my.get_batch_data_label()
+
+    y_conv_test = y_conv.eval(feed_dict={x: batch_data, y_: batch_label, test_flag: True, keep_prob: 1.0})
+    print(y_conv_test)
+    print(batch_label)
+
+    for img in batch_data:
+        print(img.shape)
+        show(img)
+
+    time.sleep(1000)
 
     for i in range(100000):
         # if i < 10000:
@@ -434,6 +435,9 @@ with tf.Session() as sess:
             # data, label = my_shuffle(data, label)
             # y_conv_test = y_conv.eval(feed_dict={x: batch_data, y_: batch_label, test_flag: True, keep_prob: 1.0})
             # print(y_conv_test)
+            print(batch_data.shape)
+            print(batch_label.shape)
+
             train_accuracy = cross_entropy.eval(feed_dict={x: batch_data, y_: batch_label, test_flag: True, keep_prob: 1.0})
             print("step %d, training accuracy %g"%(i, train_accuracy))
             # summary = sess.run(merged, feed_dict={x: batch_data, y_: batch_label, test_flag: True, keep_prob: 1.0})
@@ -454,7 +458,7 @@ with tf.Session() as sess:
             print("step %d, test accuracy %g" % (i, test_accuracy))
 
         sess.run(train_step, feed_dict={x: batch_data, y_: batch_label, keep_prob: 0.8})
-        if i % 5000 == 0:
+        if i % 2000 == 0:
             saver.save(sess, check_point_path + 'pic_check', i)
         # print('train run')
         # sess.run(update_ema, {x: batch[0], y_: batch[1], keep_prob: 1.0, tst: False, iter: i})

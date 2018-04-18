@@ -52,11 +52,11 @@ class Face(object):
 
         fi.set_decoder(WFCodeDecoder())
 
-        fi.set_transfer(CropFace(face_size=24, hue_flag=True))
+        fi.set_transfer(CropFace(face_size=36, hue_flag=True))
 
         # fi.set_coder(TxtCodeDecoder(div_num=100))
 
-        fi.set_coder(PickleCodeDecoder(div_num=5000))
+        fi.set_coder(PickleCodeDecoder(div_num=1000))
 
         fi.iter_run(total=5000)
 
@@ -72,11 +72,11 @@ class Beijin(object):
 
         fi.set_decoder(WFCodeDecoder())
 
-        fi.set_transfer(ZeroFace(box_size=24, hue_flag=True))
+        fi.set_transfer(ZeroFace(box_size=36, hue_flag=True))
 
         # fi.set_coder(TxtCodeDecoder(div_num=100))
 
-        fi.set_coder(PickleCodeDecoder(div_num=5000))
+        fi.set_coder(PickleCodeDecoder(div_num=1000))
 
         fi.iter_run(total=5000)
 
@@ -92,7 +92,7 @@ class Wrj(object):
 
         fi.set_decoder(WrjCodeDecoder())
 
-        fi.set_transfer(CropWrj(face_size=24, hue_flag=False))
+        fi.set_transfer(CropWrj(face_size=36, hue_flag=True))
 
         # fi.set_coder(TxtCodeDecoder(div_num=100))
 
@@ -112,7 +112,7 @@ class Valid(object):
 
         fi.set_decoder(MyCodeDecoder())
 
-        fi.set_transfer(CropFace(face_size=24, hue_flag=False))
+        fi.set_transfer(CropFace(face_size=36, hue_flag=False))
 
         # fi.set_coder(TxtCodeDecoder(div_num=100))
 
